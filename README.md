@@ -13,7 +13,7 @@
 **add members**
 
 - [ ] Invite your team members from https://github.com/$GITHUB_REPOSITORY/settings/access.
-- [ ] Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions?query=workflow%3A%22Update+SSH+Keys%22).
+  - Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions?query=workflow%3A%22Update+SSH+Keys%22).
 
 #### in each competition server 
 
@@ -26,7 +26,7 @@ ssh-keygen -t rsa
 cat ~/.ssh/id_rsa.pub
 ```
 
-- [ ] Copy the result and register as a [deploy key](https://github.com/$GITHUB_REPOSITORY/settings/keys/new).
+Copy the result and register as a [deploy key](https://github.com/$GITHUB_REPOSITORY/settings/keys/new).
 
 **install**
 

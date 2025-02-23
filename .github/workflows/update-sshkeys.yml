@@ -65,6 +65,12 @@ jobs:
         run: |
           git add -f root/.ssh/authorized_keys
           git commit -m 'Update ssh keys'
+      - name: replace
+        run: |
+          if grep -qE '^- \[ \] Invite your team members from' README.md; then
+            sed -i 's/^- \[ \] Invite your team members from/- [x] Invite your team members from/' README.md
+            git commit -am 'Replace "Invite your team members from"'
+          fi
       - name: git push
         run: |
           git pull origin master
