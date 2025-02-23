@@ -8,7 +8,7 @@
 
 **create a new repository**
 
-- [ ] Create a new repository from https://github.com/bgpat/isucon-boilerplate/generate.
+- [ ] Create a new repository from https://github.com/dbgofy/isucon-boilerplate/generate.
 
 **add members**
 
