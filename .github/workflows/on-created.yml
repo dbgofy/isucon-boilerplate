@@ -20,7 +20,7 @@ jobs:
         run: |
           sed -i "s/ isucon-boilerplate/ ${GITHUB_REPOSITORY#*/}/" README.md
           sed -i "s!\\\$GITHUB_REPOSITORY!${GITHUB_REPOSITORY}!" README.md
-          sed -i 's/create a new repository/~\0~ already done/' README.md
+          sed -i 's/- \[ \] create a new repository/- [x] create a new repository/' README.md
       - name: commit
         run: git commit -am 'Replace $GITHUB_REPOSITORY'
       - name: delete this script
