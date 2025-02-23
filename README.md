@@ -13,7 +13,7 @@
 **add members**
 
 - [ ] Invite your team members from https://github.com/$GITHUB_REPOSITORY/settings/access.
-  - Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions?query=workflow%3A%22Update+SSH+Keys%22).
+  - Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions/workflows/update-sshkeys.yml).
 
 #### in each competition server 
 
