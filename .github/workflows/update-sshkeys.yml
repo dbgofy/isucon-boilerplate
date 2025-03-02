@@ -3,71 +3,63 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - master
+      - master
     paths:
-    - files/pubkey/*
+      - files/pubkey/*
 jobs:
   update-sshkeys:
     name: update-sshkeys
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: ensure ssh directory
-      run: mkdir -p root/.ssh
-    - name: replace ssh keys
-      uses: actions/github-script@v3
-      with:
-        script: |
-          require("fs").writeFileSync(
-            "root/.ssh/authorized_keys",
-            [
-              ...(await Promise.all(
-                await github.repos.listCollaborators(context.repo).then((resp) =>
-                  resp.data.map((c) =>
-                    github.users
-                      .getByUsername({ username: c.login })
-                      .then((resp) => ({
-                        ...c,
-                        email: resp.data.email || `${c.login}@users.noreply.github.com`,
-                      }))
-                      .then((user) =>
-                        github.users
-                          .listPublicKeysForUser({ username: user.login })
-                          .then((resp) =>
-                            resp.data.map(({ key }) =>
-                              [
-                                Object.entries({
-                                  GIT_AUTHOR_NAME: user.login,
-                                  GIT_AUTHOR_EMAIL: user.email,
-                                })
-                                  .map(([k, v]) => `environment="${k}=${v}"`)
-                                  .join(","),
-                                key,
-                              ].join(" ")
-                            )
-                          )
-                      )
-                  )
-                )
-              ).then((users) => [].concat(...users))),
-              "",
-            ].join("\n")
-          );
-    - name: add host keys
-      run: cat files/pubkey/* >> root/.ssh/authorized_keys || true
-    - name: config git
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email $GITHUB_ACTOR@users.noreply.github.com
-        git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-        git checkout master
-    - name: git commit
-      run: |
-        git add -f root/.ssh/authorized_keys
-        git commit -m 'Update ssh keys'
-    - name: git push
-      run: |
-        git pull origin master
-        git push origin master
+      - uses: actions/checkout@v4
+      - name: ensure ssh directory
+        run: mkdir -p root/.ssh
+      - name: replace ssh keys
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const collaborators = await github.rest.repos.listCollaborators({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            const keys = await Promise.all(
+              collaborators.data.map(async (collaborator) => {
+                const user = await github.rest.users.getByUsername({
+                  username: collaborator.login,
+                });
+                const email = user.data.email || `${collaborator.login}@users.noreply.github.com`;
+                const publicKeys = await github.rest.users.listPublicKeysForUser({
+                  username: collaborator.login,
+                });
+                return publicKeys.data.map(({ key }) => {
+                  const env = `environment="GIT_AUTHOR_NAME=${collaborator.login},GIT_AUTHOR_EMAIL=${email}"`;
+                  return `${env} ${key}`;
+                });
+              })
+            );
+            fs.writeFileSync('root/.ssh/authorized_keys', keys.flat().join('\n') + '\n');
+      - name: add host keys
+        run: cat files/pubkey/* >> root/.ssh/authorized_keys || true
+      - name: config git
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email $GITHUB_ACTOR@users.noreply.github.com
+          git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout master
+      - name: git commit
+        run: |
+          git add -f root/.ssh/authorized_keys
+          git commit -m 'Update ssh keys'
+      - name: replace
+        run: |
+          if grep -qE '^- \[ \] Invite your team members from' README.md; then
+            sed -i 's/^- \[ \] Invite your team members from/- [x] Invite your team members from/' README.md
+            git commit -am 'Replace "Invite your team members from"'
+          fi
+      - name: git push
+        run: |
+          git pull origin master
+          git push origin master
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

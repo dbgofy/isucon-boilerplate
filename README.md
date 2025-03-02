@@ -8,12 +8,12 @@
 
 **create a new repository**
 
-Create a new repository from https://github.com/bgpat/isucon-boilerplate/generate.
+- [ ] Create a new repository from https://github.com/dbgofy/isucon-boilerplate/generate.
 
 **add members**
 
-Invite your team members from https://github.com/$GITHUB_REPOSITORY/settings/access.
-After them have confirmed, run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions?query=workflow%3A%22Update+SSH+Keys%22).
+- [ ] Invite your team members from https://github.com/$GITHUB_REPOSITORY/settings/access.
+  - Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions/workflows/update-sshkeys.yml).
 
 #### in each competition server 
 
@@ -58,6 +58,6 @@ vim /etc/nginx/nginx.conf
 ### track source files by git
 
 ```bash
+cd /home/isucon
 git add -f *.go
 ```
-

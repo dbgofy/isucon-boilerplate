@@ -2,32 +2,32 @@ name: On Created
 on:
   push:
     branches:
-    - master
+      - master
 jobs:
   on-created:
     name: on-created
     runs-on: ubuntu-latest
     if: ${{ github.repository != 'dbgofy/isucon-boilerplate' }}
     steps:
-    - uses: actions/checkout@v1
-    - name: config git
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email $GITHUB_ACTOR@users.noreply.github.com
-        git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-        git checkout master
-    - name: replace
-      run: |
-        sed -i "s/ isucon-boilerplate/ ${GITHUB_REPOSITORY#*/}/" README.md
-        sed -i "s!\\\$GITHUB_REPOSITORY!${GITHUB_REPOSITORY}!" README.md
-        sed -i 's/create a new repository/~\0~ already done/' README.md
-    - name: commit
-      run: git commit -am 'Replace $GITHUB_REPOSITORY'
-    - name: delete this script
-      run: |
-        rm -f .github/workflows/on-created.yml
-        git commit -am 'Delete on-created workflow'
-    - name: push
-      run: git push -f origin master
+      - uses: actions/checkout@v4
+      - name: config git
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email $GITHUB_ACTOR@users.noreply.github.com
+          git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout master
+      - name: replace
+        run: |
+          sed -i "s/ isucon-boilerplate/ ${GITHUB_REPOSITORY#*/}/" README.md
+          sed -i "s!\\\$GITHUB_REPOSITORY!${GITHUB_REPOSITORY}!" README.md
+          sed -i 's/^\- \[ \] Create a new repository/- [x] Create a new repository/' README.md
+      - name: commit
+        run: git commit -am 'Replace $GITHUB_REPOSITORY'
+      - name: delete this script
+        run: |
+          rm -f .github/workflows/on-created.yml
+          git commit -am 'Delete on-created workflow'
+      - name: push
+        run: git push -f origin master
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

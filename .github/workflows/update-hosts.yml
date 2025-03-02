@@ -3,48 +3,48 @@ on:
   workflow_dispatch:
   push:
     branches:
-    - master
+      - master
     paths:
-    - files/hosts/*
+      - files/hosts/*
 jobs:
   update-hosts:
     name: update-hosts
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: generate config for prometheus
-      run: |
-        jq -sR '
-          [
-            .
-            | split("\n")[]
-            | split(" ")
-            | select(length == 2)
-            | {
-                targets: [
-                  "\(.[1]):9100",
-                  "\(.[1]):9256"
-                ],
-                labels: {
-                  hostname: .[0],
-                  ip: .[1]
+      - uses: actions/checkout@v4
+      - name: generate config for prometheus
+        run: |
+          jq -sR '
+            [
+              .
+              | split("\n")[]
+              | split(" ")
+              | select(length == 2)
+              | {
+                  targets: [
+                    "\(.[1]):9100",
+                    "\(.[1]):9256"
+                  ],
+                  labels: {
+                    hostname: .[0],
+                    ip: .[1]
+                  }
                 }
-              }
-          ]
-        ' files/hosts/* > etc/prometheus/hosts.json
-    - name: config git
-      run: |
-        git config user.name $GITHUB_ACTOR
-        git config user.email $GITHUB_ACTOR@users.noreply.github.com
-        git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-        git checkout master
-    - name: git commit
-      run: |
-        git add -f etc/prometheus/hosts.json
-        git commit -m 'Update config for prometheus'
-    - name: git push
-      run: |
-        git pull origin master
-        git push origin master
+            ]
+          ' files/hosts/* > etc/prometheus/hosts.json
+      - name: config git
+        run: |
+          git config user.name $GITHUB_ACTOR
+          git config user.email $GITHUB_ACTOR@users.noreply.github.com
+          git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git checkout master
+      - name: git commit
+        run: |
+          git add -f etc/prometheus/hosts.json
+          git commit -m 'Update config for prometheus'
+      - name: git push
+        run: |
+          git pull origin master
+          git push origin master
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
