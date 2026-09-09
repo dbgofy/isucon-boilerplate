@@ -124,7 +124,7 @@ endif
 	-git commit -m 'Add host'
 
 .PHONY: monitoring
-monitoring: prometheus node_exporter process-exporter grafana-server
+monitoring: prometheus node_exporter process-exporter grafana
 
 .PHONY: prometheus
 prometheus: /usr/local/bin/prometheus
@@ -156,16 +156,16 @@ process-exporter: /usr/local/bin/process-exporter /etc/process-exporter/all.yaml
 /etc/process-exporter:
 	mkdir -p $@
 
-.PHONY: grafana-server
-grafana-server: /usr/local/bin/grafana-server
+.PHONY: grafana
+grafana: /usr/local/bin/grafana
 	-pkill $@
-	GF_SERVER_HTTP_PORT=3999 GF_AUTH_ANONYMOUS_ENABLED=true GF_AUTH_ANONYMOUS_ORG_ROLE=Admin nohup $@ -homepath /opt/grafana &
+	GF_SERVER_HTTP_PORT=3999 GF_AUTH_ANONYMOUS_ENABLED=true GF_AUTH_ANONYMOUS_ORG_ROLE=Admin nohup $@ server -homepath /opt/grafana &
 
-/usr/local/bin/grafana-server: /opt/grafana
-	ln -sf $</bin/grafana-server $@
+/usr/local/bin/grafana: /opt/grafana
+	ln -sf $</bin/grafana $@
 
 /opt/grafana:
 	mkdir -p $@
-	curl -sL https://dl.grafana.com/oss/release/grafana-7.1.5.linux-amd64.tar.gz | tar xzv --strip-components 1 -C $@
+	curl -sL https://dl.grafana.com/oss/release/grafana-13.2.1.linux-amd64.tar.gz | tar xzv --strip-components 1 -C $@
 	cp -f /files/grafana/datasources.yml $@/conf/provisioning/datasources/datasources.yml
 	cp -f /files/grafana/dashboards.yml $@/conf/provisioning/dashboards/dashboards.yml
