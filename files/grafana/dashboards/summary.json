@@ -1,45 +1,9 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__elements": {},
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "bargauge",
-      "name": "Bar gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "13.2.1"
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "13.1.7"
-    },
-    {
-      "type": "panel",
-      "id": "timeseries",
-      "name": "Time series",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
         "builtIn": 1,
+        "datasource": "-- Grafana --",
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
@@ -55,10 +19,7 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -188,10 +149,6 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "editorMode": "code",
           "expr": "sum by (groupname, hostname) (rate(namedprocess_namegroup_cpu_seconds_total{hostname=~\"$hostname\"}[$__interval]))",
           "instant": false,
@@ -200,10 +157,6 @@
           "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "editorMode": "code",
           "expr": "count without (cpu) (node_cpu_seconds_total{hostname=~\"$hostname\", mode=\"idle\"})",
           "instant": false,
@@ -216,10 +169,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -349,10 +299,6 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "sum by (groupname, hostname) (rate(namedprocess_namegroup_memory_bytes{hostname=~\"$hostname\"}[$__interval]))",
           "instant": false,
           "interval": "",
@@ -360,10 +306,6 @@
           "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "editorMode": "code",
           "expr": "node_memory_MemTotal_bytes{hostname=~\"$hostname\"}",
           "interval": "",
@@ -376,10 +318,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -461,20 +400,12 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "rate(node_network_receive_bytes_total{hostname=~\"$hostname\",device=~\"$nic\"}[$__interval])",
           "interval": "",
           "legendFormat": "rx ({{device}})",
           "refId": "A"
         },
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "-rate(node_network_transmit_bytes_total{hostname=~\"$hostname\",device=~\"$nic\"}[$__interval])",
           "instant": false,
           "interval": "",
@@ -486,10 +417,7 @@
       "type": "timeseries"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -546,10 +474,6 @@
       "repeatDirection": "h",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "editorMode": "code",
           "expr": "1 - (node_filesystem_avail_bytes{hostname=~\"$hostname\"} / node_filesystem_size_bytes{hostname=~\"$hostname\"})",
           "format": "time_series",
@@ -563,10 +487,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
+      "datasource": "Prometheus",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -649,10 +570,6 @@
       "repeat": "hostname",
       "targets": [
         {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
           "expr": "node_filefd_allocated{hostname=~\"$hostname\"}/node_filefd_maximum{hostname=~\"$hostname\"}",
           "interval": "",
           "legendFormat": "usage",
@@ -672,10 +589,7 @@
       {
         "allowCustomValue": true,
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
+        "datasource": "Prometheus",
         "definition": "label_values(up, hostname)",
         "includeAll": true,
         "multi": true,
@@ -690,10 +604,7 @@
       {
         "allowCustomValue": true,
         "current": {},
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
+        "datasource": "Prometheus",
         "definition": "label_values(node_network_device_id, device)",
         "includeAll": true,
         "multi": true,
@@ -717,9 +628,9 @@
       "10s"
     ]
   },
-  "timezone": "browser",
+  "timezone": "",
   "title": "Summary",
   "uid": "RlJjgevMk",
-  "version": 7,
+  "version": 10,
   "weekStart": ""
 }
