@@ -1,4 +1,6 @@
 HOSTNAME := $(shell hostname)
+GRAFANA_VERSION := 13.2.1
+GRAFANA_HOME := /opt/grafana-$(GRAFANA_VERSION)
 
 .PHONY: all
 all: git ssh commit /home/isucon/.bashrc /files/hosts/$(HOSTNAME)
@@ -159,13 +161,14 @@ process-exporter: /usr/local/bin/process-exporter /etc/process-exporter/all.yaml
 .PHONY: grafana
 grafana: /usr/local/bin/grafana
 	-pkill $@
-	GF_SERVER_HTTP_PORT=3999 GF_AUTH_ANONYMOUS_ENABLED=true GF_AUTH_ANONYMOUS_ORG_ROLE=Admin nohup $@ server -homepath /opt/grafana &
+	GF_SERVER_HTTP_PORT=3999 GF_AUTH_ANONYMOUS_ENABLED=true GF_AUTH_ANONYMOUS_ORG_ROLE=Admin GF_PATHS_DATA=/opt/grafana/data nohup $@ server -homepath $(GRAFANA_HOME) &
 
-/usr/local/bin/grafana: /opt/grafana
-	ln -sf $</bin/grafana $@
+.PHONY: /usr/local/bin/grafana
+/usr/local/bin/grafana: $(GRAFANA_HOME)/bin/grafana
+	ln -sf $< $@
 
-/opt/grafana:
-	mkdir -p $@
-	curl -sL https://dl.grafana.com/oss/release/grafana-13.2.1.linux-amd64.tar.gz | tar xzv --strip-components 1 -C $@
-	cp -f /files/grafana/datasources.yml $@/conf/provisioning/datasources/datasources.yml
-	cp -f /files/grafana/dashboards.yml $@/conf/provisioning/dashboards/dashboards.yml
+$(GRAFANA_HOME)/bin/grafana:
+	mkdir -p $(GRAFANA_HOME)
+	curl -fsSL https://dl.grafana.com/oss/release/grafana-$(GRAFANA_VERSION).linux-amd64.tar.gz | tar xzv --strip-components 1 -C $(GRAFANA_HOME)
+	cp -f /files/grafana/datasources.yml $(GRAFANA_HOME)/conf/provisioning/datasources/datasources.yml
+	cp -f /files/grafana/dashboards.yml $(GRAFANA_HOME)/conf/provisioning/dashboards/dashboards.yml
