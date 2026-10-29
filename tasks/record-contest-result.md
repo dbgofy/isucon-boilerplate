@@ -46,8 +46,10 @@ TAG="${STAMP}-${SCORE}"
 ## 1. 対象 commit を確認する
 
 ```bash
+ # 計測時に保存した SHA を指定する
+TARGET_COMMIT=REPLACE_WITH_RECORDED_COMMIT
 git fetch origin
-git log -1 --oneline "origin/${BRANCH}"
+git show -s --oneline "$TARGET_COMMIT"
 git status
 ```
 
@@ -56,13 +58,13 @@ git status
 ```bash
 gh release create "$TAG" \
   --repo "$REPO" \
-  --target "$BRANCH" \
+  --target "$TARGET_COMMIT" \
   --title "${STAMP} score ${SCORE}" \
   --notes "$(cat <<EOF
 ## 要約
 
 - スコア: ${SCORE}（実測。ベースラインか最終結果かを明記）
-- 対象 commit: $(git rev-parse "origin/${BRANCH}")
+- 対象 commit: ${TARGET_COMMIT}
 
 ## 関連
 
@@ -105,4 +107,3 @@ gh release view "$TAG" --repo "$REPO"
 
 - GitHub Release から対象 commit、変更内容、関連 Issue・PR、スコアを確認できる。
 - 推測や未確認事項が明示されている。
-

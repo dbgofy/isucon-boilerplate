@@ -94,6 +94,7 @@ git status
 
 ```bash
 cd /
+test -e /.gitignore || cp -n /files/gitignore /.gitignore
 ls -l /etc/sudoers /etc/ssh/sshd_config /etc/nginx /etc/mysql /etc/systemd/system
 for f in \
   /etc/sudoers \
@@ -212,4 +213,3 @@ done
 - Git 管理対象に秘密鍵、DB データ、バイナリ、実行時生成データが含まれていない。
 - 以後の同期をローカル変更と `git pull` で行える。
 - 各サーバーへ root で SSH できる。
-

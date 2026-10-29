@@ -47,7 +47,7 @@ hostname
 pgrep -a prometheus || true
 pgrep -a grafana || true
 pgrep -a node_exporter || true
-mysql -e "SHOW VARIABLES LIKE '\''slow_query_log'\''; SHOW VARIABLES LIKE '\''long_query_time'\'';" 2>/dev/null || true
+mysql -e "SHOW VARIABLES LIKE 'slow_query_log'; SHOW VARIABLES LIKE 'long_query_time';" 2>/dev/null || true
 grep -RInE 'pprof|debug|access_log|slow_query' /etc/nginx /etc/mysql /home/isucon 2>/dev/null | head
 EOF
 done
@@ -75,7 +75,14 @@ done
 
 ```bash
 for s in "${SERVERS[@]}"; do
-  ssh "$s" 'pkill prometheus; pkill node_exporter; pkill process-exporter; pkill grafana-server; true'
+  ssh "$s" 'bash -s' <<'EOF'
+for pattern in '(^|/)prometheus( |$)' '(^|/)node_exporter( |$)' '(^|/)process-exporter( |$)' '(^|/)grafana server( |$)'; do
+  # 表示された対象が make monitoring で起動したプロセスか確認する
+  pgrep -af "$pattern" || true
+done
+# 確認した PID だけを指定する: kill PID...
+# 終了後に同じ pgrep で残存を確認する
+EOF
 done
 ```
 
@@ -123,4 +130,3 @@ git revert HEAD
 
 - 提出用ベンチマークで不要な計測処理が動作していない。
 - 必要なら再有効化できる。
-

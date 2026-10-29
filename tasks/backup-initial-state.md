@@ -69,7 +69,7 @@ MySQL が動いている場合はデータ込みで dump する。接続情報�
 
 ```bash
 ssh s1 'bash -s' <<'EOF'
-set -eu
+set -euo pipefail
 STAMP=$(date +%Y%m%d-%H%M%S)
 HOST=$(hostname -s)
 OUT="/tmp/${HOST}-db-${STAMP}.sql.gz"
@@ -148,4 +148,3 @@ git status --short /tmp/isucon-work/backup
 - バックアップが Git の履歴に追加されていない。
 - アプリケーションコードや設定ファイルがバックアップ対象に含まれていない。
 - 復旧方法を確認できる。
-

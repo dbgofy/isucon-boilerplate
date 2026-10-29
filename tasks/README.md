@@ -5,26 +5,7 @@
 
 各タスクには、目的に加えて前提条件、対象、作業、確認方法、失敗時の復旧、完了条件を書く。
 
-ユーザーの入力・判断・操作が必要なタスクには front matter に `needs-user-action: true` を付ける。Issue には同名の `needs-user-action` label を付け、本文の冒頭に必要情報と次の選択肢を表示する。
-
-`needs-user-action` は作業の前提条件だけを示す label とする。AI の関与は label で管理しない。
-
-```markdown
-## ユーザー確認
-
-次のどれで進めますか？
-
-1. 実行する（必要情報を提供する）
-2. 今回は実行しない（未完了のまま保留する）
-3. 手順だけ作成する（実機・外部サービスには触れない）
-
-必要な情報:
-- サーバー名・役割・接続先:
-- 実行対象と範囲:
-- 実行してよい時間帯:
-```
-
-選択肢の回答がない場合は実行せず、Issue に不足情報を記録する。秘密情報そのものは受け取らず、認証方法または保管場所だけを確認する。
+ユーザーの入力・判断・操作が必要なタスクには front matter に `needs-user-action: true` を付け、同名の label を付ける。必要な情報は各タスクの本文を参照する。
 
 計測データや図の一時ファイルは `/tmp/isucon-work/` などの一時領域に置き、リポジトリ直下に専用の成果物ディレクトリは作成しない。正式な要約・数値・判断理由は Issue、Pull Request、Release に記録する。
 
@@ -61,6 +42,64 @@ phase label は作業を行う時期を表す。
 タスク候補は問題固有のエンドポイント名、テーブル名、解答手順を含めない。
 問題固有の改善は、計測結果に基づいて競技中に個別の Issue として作成する。
 
+
+## フェーズ別タスク一覧
+
+必要な時期のタスクだけ本文を参照する。
+
+### day-before
+
+- [競技中の連絡手段と通知を準備する](prepare-communication.md)
+- [GitHub Project を準備する](prepare-project.md)
+- [競技用リポジトリを準備する](prepare-repo.md)
+- [レギュレーションを確認する](read-regulation.md)
+
+### just-before
+
+
+### start
+
+- [運営提供のインフラを適用する](apply-provided-infra.md)
+- [DB の初期データなど Git 管理対象外のデータをバックアップする](backup-initial-state.md)
+- [ポータルを確認する](check-portal.md)
+- [競技サーバーを初期化し Git 管理へ登録する](initialize-servers.md)
+- [ローカルの接続設定を用意する](prepare-local-access.md)
+- [マニュアルを確認する](read-manual.md)
+- [ベンチマーク仕様をまとめる](summarize-benchmark-spec.md)
+
+### early-competition
+
+- [アプリケーション構成を確認分析する](analyze-application-architecture.md)
+- [サーバーの構成とマシンスペックを確認する](check-environment.md)
+- [アクセスログの集計を設定する](prepare-access-log.md)
+- [デプロイ手順を用意する](prepare-deploy.md)
+- [ログローテーションを用意する](prepare-logrotate.md)
+- [計測とモニタリングを準備する](prepare-observability.md)
+- [OS の制限と不要なフィルタを確認する](relax-os-limits.md)
+- [初期スキーマとインデックスを確認する](review-initial-schema.md)
+- [初期状態のベースラインを計測する](run-baseline-benchmark.md)
+- [言語ランタイムを更新する](update-runtime.md)
+
+### mid-competition
+
+- [再起動試験（1回目）](reboot-1.md)
+
+### final-check
+
+- [提出用ベンチマーク前に計測機能を無効化する](disable-instrumentation.md)
+- [提出用の最終ベンチマークを実行する](final-benchmark.md)
+- [変更を凍結する](freeze.md)
+- [再起動試験（2回目）](reboot-2.md)
+- [再起動試験（3回目）](reboot-3.md)
+- [再起動試験（最終）](reboot-final.md)
+
+### after-competition
+
+- [リポジトリを公開する](publish-repo.md)
+- [競技結果を GitHub Release に記録する](record-contest-result.md)
+- [通知用 token を revoke する](revoke-tokens.md)
+- [不要なインスタンスを停止する](stop-instances.md)
+- [振り返りを公開する](write-retrospective.md)
 
 ## リポジトリ作成時の Issue 化と後片付け
 

@@ -44,10 +44,17 @@ SERVERS=(s1 s2 s3)
 
 ## 1. 条件を記録する
 
+計測前のコミットを保存し、後で Release に使う。各サーバーのコミットが異なる場合は構成を記録し、対象を確認する。
+
+```bash
+TARGET_COMMIT=$(ssh s1 'git -C / rev-parse HEAD')
+printf "%s\n" "$TARGET_COMMIT" > "$DIR/target-commit.txt"
+```
+
 ```bash
 {
   echo "stamp=$STAMP"
-  echo "commit=$(ssh s1 'git -C / rev-parse HEAD')"
+  echo "commit=$TARGET_COMMIT"
   echo "servers=${SERVERS[*]}"
   echo "condition: 初期状態。変更内容は Issue に書く。"
 } | tee "$DIR/meta.txt"
@@ -121,7 +128,7 @@ EOF
 ベンチマークごとに、実行時に取得した default branch の exact commit を target にしてReleaseを作成する。スコアが0点またはfailでもReleaseを省略しない。ベースラインであることを明記し、最終結果として扱わない。
 
 ```bash
-TARGET_COMMIT=$(ssh s1 'git -C / rev-parse HEAD')
+TARGET_COMMIT=$(cat "$DIR/target-commit.txt")
 TAG="baseline-${STAMP}-score-${SCORE}"
 gh release create "$TAG" \
   --repo "$REPO" \
@@ -156,4 +163,3 @@ cat "$DIR/meta.txt"
 
 - 再比較できるベースラインが保存されている。
 - 実測していない値を記載していない。
-

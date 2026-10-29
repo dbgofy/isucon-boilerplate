@@ -82,8 +82,7 @@ async function createTaskIssues({ github, context, directory = 'tasks' }) {
   for (const task of tasks) {
     let issue = existing.get(task.filename);
     if (!issue) {
-      const question = task.needsUserAction ? '## ユーザー確認\n\n次のどれで進めますか？\n\n1. 実行する（必要情報を提供する）\n2. 今回は実行しない（未完了のまま保留する）\n3. 手順だけ作成する（実機・外部サービスには触れない）\n\n必要な情報:\n- サーバー名・役割・接続先:\n- 実行対象と範囲:\n- 実行してよい時間帯:\n\n秘密情報そのものは記載せず、認証方法または保管場所を確認する。\n\n' : '';
-      issue = (await github.rest.issues.create({ ...repo, title: task.title, labels: task.labels, body: `${question}${task.body}\n\n${marker(task.filename)}` })).data;
+      issue = (await github.rest.issues.create({ ...repo, title: task.title, labels: task.labels, body: `${task.body}\n\n${marker(task.filename)}` })).data;
       existing.set(task.filename, issue);
     }
     // Separate creation and linking so a failed linking operation is recoverable.

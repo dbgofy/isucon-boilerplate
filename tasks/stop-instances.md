@@ -47,8 +47,14 @@ depends_on:
 ```bash
 SERVERS=(s1 s2 s3)
 for s in "${SERVERS[@]}"; do
-  ssh "$s" 'pkill prometheus; pkill node_exporter; pkill process-exporter; pkill grafana-server; true
-    pgrep -a prometheus || echo stopped'
+  ssh "$s" 'bash -s' <<'EOF'
+for pattern in '(^|/)prometheus( |$)' '(^|/)node_exporter( |$)' '(^|/)process-exporter( |$)' '(^|/)grafana server( |$)'; do
+  # 表示された対象が make monitoring で起動したプロセスか確認する
+  pgrep -af "$pattern" || true
+done
+# 確認した PID だけを指定する: kill PID...
+# 終了後に同じ pgrep で残存を確認する
+EOF
 done
 ```
 
@@ -92,4 +98,3 @@ EOF
 
 - 停止対象と残置対象が記録されている。
 - 運営管理の環境を、許可なく停止していない。
-
