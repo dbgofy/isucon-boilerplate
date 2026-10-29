@@ -1,34 +1,34 @@
 # isucon-boilerplate
 
-## usage
+## 使い方
 
-### initialize
+### 初期設定
 
-#### from local PC
+#### ローカルPCでの作業
 
-**create a new repository**
+**新しいリポジトリを作成する**
 
-- [ ] Create a new repository from https://github.com/dbgofy/isucon-boilerplate/generate.
+- [ ] https://github.com/dbgofy/isucon-boilerplate/generate から新しいリポジトリを作成します。
 
-**add members**
+**メンバーを追加する**
 
-- [ ] Invite your team members from https://github.com/$GITHUB_REPOSITORY/settings/access.
-  - Run [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions/workflows/update-sshkeys.yml).
+- [ ] https://github.com/$GITHUB_REPOSITORY/settings/access からチームメンバーを招待します。
+  - [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions/workflows/update-sshkeys.yml) を実行します。
 
-#### in each competition server 
+#### 各競技サーバーでの作業
 
-Run following commands by `root` user.
+以下のコマンドを `root` ユーザーで実行します。
 
-**generate and register ssh deploy key**
+**SSHデプロイキーを生成・登録する**
 
 ```bash
 ssh-keygen -t rsa
 cat ~/.ssh/id_rsa.pub
 ```
 
-Copy the result and register as a [deploy key](https://github.com/$GITHUB_REPOSITORY/settings/keys/new).
+出力結果をコピーし、[デプロイキー](https://github.com/$GITHUB_REPOSITORY/settings/keys/new)として登録します。
 
-**install**
+**インストールする**
 
 ```bash
 cd /
@@ -39,23 +39,23 @@ git reset --hard FETCH_HEAD
 make
 ```
 
-Add deploy key and run `git push -u origin master`.
+デプロイキーを追加し、`git push -u origin master` を実行します。
 
-### run monitoring servers
+### 監視サーバーを起動する
 
 ```bash
 make monitoring
 ```
 
-Access to 3999 port from your browser.
+ブラウザーからポート3999にアクセスします。
 
-### edit config file
+### 設定ファイルを編集する
 
 ```bash
 vim /etc/nginx/nginx.conf
 ```
 
-### track source files by git
+### ソースファイルをGitの管理対象に追加する
 
 ```bash
 cd /home/isucon
