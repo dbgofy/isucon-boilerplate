@@ -13,6 +13,7 @@
 **メンバーを追加する**
 
 - [ ] https://github.com/$GITHUB_REPOSITORY/settings/access からチームメンバーを招待します。
+  - 組織でデフォルト権限を設定している公開メンバーは招待不要です。
   - [Update SSH Keys](https://github.com/$GITHUB_REPOSITORY/actions/workflows/update-sshkeys.yml) を実行します。
 
 #### 各競技サーバーでの作業
