@@ -128,7 +128,7 @@ monitoring: prometheus node_exporter process-exporter grafana
 
 .PHONY: prometheus
 prometheus: /usr/local/bin/prometheus
-	-pkill $@
+	-pkill -x $(shell printf '%s' '$@' | cut -c 1-15)
 	nohup $@ --config.file=/etc/prometheus/prometheus.yml &
 
 /usr/local/bin/prometheus:
@@ -136,7 +136,7 @@ prometheus: /usr/local/bin/prometheus
 
 .PHONY: node_exporter
 node_exporter: /usr/local/bin/node_exporter
-	-pkill $@
+	-pkill -x $(shell printf '%s' '$@' | cut -c 1-15)
 	nohup $@ &
 
 /usr/local/bin/node_exporter:
@@ -144,7 +144,7 @@ node_exporter: /usr/local/bin/node_exporter
 
 .PHONY: process-exporter
 process-exporter: /usr/local/bin/process-exporter /etc/process-exporter/all.yaml
-	-pkill $@
+	-pkill -x $(shell printf '%s' '$@' | cut -c 1-15)
 	nohup $@ -config.path /etc/process-exporter/all.yaml &
 
 /usr/local/bin/process-exporter:
@@ -158,7 +158,7 @@ process-exporter: /usr/local/bin/process-exporter /etc/process-exporter/all.yaml
 
 .PHONY: grafana
 grafana: /usr/local/bin/grafana
-	-pkill $@
+	-pkill -x $(shell printf '%s' '$@' | cut -c 1-15)
 	GF_SERVER_HTTP_PORT=3999 GF_AUTH_ANONYMOUS_ENABLED=true GF_AUTH_ANONYMOUS_ORG_ROLE=Admin nohup $@ server -homepath /opt/grafana &
 
 /usr/local/bin/grafana: /opt/grafana
