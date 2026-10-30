@@ -97,8 +97,8 @@ async function createTaskIssues({ github, context, directory = 'tasks' }) {
     if (!issue) {
       // Templates can provide their own task-specific questions. Do not ask every
       // task for server names or an execution window (e.g. reading regulations).
-      const question = task.needsUserAction && !/^#{1,2} ユーザー確認$/m.test(task.body)
-        ? `## ユーザー確認\n\n1. 実行する（必要情報を提供する）\n2. 今回は実行しない（未完了のまま保留する）\n3. 手順だけ作成する（実機・外部サービスには触れない）\n\n必要な情報は、本文の前提条件・対象・作業に記載したこのタスク固有の項目だけを確認する。既に許可された対象・範囲は再質問しない。秘密情報そのものは記載しない。\n\n`
+      const question = task.needsUserAction && !/^#{1,2} (?:必要な情報|ユーザー確認)$/m.test(task.body)
+        ? `## 必要な情報\n\nタスクは実行を前提とし、不足情報がある場合だけ確認する。\n\n必要な情報は、本文の前提条件・対象・作業に記載したこのタスク固有の項目だけを確認する。既に許可された対象・範囲は再質問しない。秘密情報そのものは記載しない。\n\n`
         : '';
       issue = (await github.rest.issues.create({ ...repo, title: task.title, milestone: milestoneNumbers.get(task.milestone), labels: task.labels, body: `${question}${task.body}\n\n${marker(task.filename)}` })).data;
       existing.set(task.filename, issue);
