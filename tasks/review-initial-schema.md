@@ -5,7 +5,7 @@ labels:
   - type:database
   - type:documentation
 depends_on:
-  - check-environment.md
+  - initialize-servers.md
 ---
 
 # 目的
@@ -19,7 +19,7 @@ depends_on:
 
 # 対象サーバー
 
-DB が動いているサーバー。配置は `check-environment.md` の記録を使う。
+DB が動いているサーバー。配置は既存設定や実機で確認する。
 
 # 作業
 
