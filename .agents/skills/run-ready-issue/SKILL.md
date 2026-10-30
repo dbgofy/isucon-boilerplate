@@ -23,6 +23,8 @@ description: GitHub の未ブロック Issue を選び、前段マイルスト�
 
 ## 2. 候補と依存関係を調べる
 
+認証済み `gh` と `jq` が使える場合、`.agents/skills/run-ready-issue/scripts/list-issues.sh OWNER/REPO` で未完了 Issue の調査用 JSON を一括取得する。引数省略時は現在のリポジトリを使用する。`truncated` に列挙された項目は個別に最後まで取得する。この出力は選定結果ではなく、関連 PR、子 Issue、blocking、前段 Milestone や依存先の成果など含まれない情報は別途確認する。取得失敗時は候補なしと判断しない。
+
 未完了 Issue をページネーションの最後まで確認する。検索上限に達した場合は Milestone などで分割して調べ、未取得の範囲を「候補なし」と判断しない。PR は候補から除外する。
 
 候補ごとに本文、コメント、完了条件、assignee、Project の Status、Milestone、親子関係、GitHub の Issue dependencies（blocked by / blocking）、関連 PR を読む。本文やコメントにのみ書かれた前提条件も確認する。依存先は別リポジトリも含めて現在の状態と成果を確認する。
