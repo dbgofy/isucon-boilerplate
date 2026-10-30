@@ -5,9 +5,9 @@
 
 各タスクには、目的に加えて前提条件、対象、作業、確認方法、失敗時の復旧、完了条件を書く。
 
-ユーザーの入力・判断・操作が必要なタスクには front matter に `needs-user-action: true` を付ける。Issue には同名の `needs-user-action` label を付け、本文の冒頭に実行に必要な情報を表示する。タスクは実行を前提とし、不足情報がある場合だけ確認する。
+タスクは実行を前提とし、解決できない問題でユーザーの入力・判断・操作が必要になった場合に `needs-user-action` label を付ける。
 
-`needs-user-action` は作業の前提条件だけを示す label とする。AI の関与は label で管理しない。
+`needs-user-action` はユーザー対応待ちを示す label とする。AI の関与は label で管理しない。
 
 ```markdown
 ## 必要な情報

@@ -1,6 +1,5 @@
 ---
 title: "競技中の連絡手段と通知を準備する"
-needs-user-action: true
 milestone: "01 事前準備"
 labels:
   - type:task

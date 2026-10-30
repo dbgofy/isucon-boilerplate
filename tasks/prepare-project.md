@@ -1,6 +1,5 @@
 ---
 title: "GitHub Project を準備する"
-needs-user-action: true
 milestone: "01 事前準備"
 labels:
   - type:task
@@ -10,7 +9,7 @@ depends_on: []
 
 # 必要な情報
 
-必要な情報: 対象リポジトリ・Project、作成・編集の権限、自動追加設定をユーザーが UI で行うか。既に提供・許可された内容は再質問しない。秘密情報の値は書かない。
+必要な情報: 対象リポジトリ・Project と作成・編集の権限。秘密情報の値は書かない。
 
 # 目的
 

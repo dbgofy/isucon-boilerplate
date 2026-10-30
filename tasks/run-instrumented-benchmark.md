@@ -1,6 +1,5 @@
 ---
 title: "計測ありの2回目ベンチマークを実行する"
-needs-user-action: true
 milestone: "04 競技序盤"
 labels:
   - type:performance

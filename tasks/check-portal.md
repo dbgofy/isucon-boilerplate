@@ -1,6 +1,5 @@
 ---
 title: "ポータルを確認する"
-needs-user-action: true
 milestone: "03 競技開始直後"
 labels:
   - type:task
