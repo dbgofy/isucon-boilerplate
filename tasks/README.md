@@ -51,7 +51,7 @@ Issue 化時には `depends_on` を依存先IssueへのGitHub Issue dependency�
 - `06 競技終盤`
 - `07 競技終了後`
 
-初期化処理は7件をタイトルで照合して冪等に作成し、新規タスクに割り当てる。phase label は付与しない。既存 Issue は再実行で書き換えないため、旧 phase label からの移行が必要な既存リポジトリは別の移行作業として管理する。Project は Milestone 列と時期別ビューを用意する。
+初期化処理は7件をタイトルで照合して冪等に作成し、新規タスクに割り当てる。phase label は付与しない。既存 Issue は再実行で書き換えないため、旧 phase label からの移行が必要な既存リポジトリは別の移行作業として管理する。Project は「すべて」「着手可能」「人間の操作が必要」の3つの Board ビューを用意し、Status 列・Milestone レーンを共通にする。GraphQL API でビュー・フィルター・表示フィールドを設定し、未対応項目は UI で補う。詳細は `prepare-project.md` を Issue 化した Project 準備 Issue に従う。
 
 タスク候補は問題固有のエンドポイント名、テーブル名、解答手順を含めない。
 問題固有の改善は、計測結果に基づいて競技中に個別の Issue として作成する。
