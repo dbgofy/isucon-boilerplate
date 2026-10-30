@@ -30,7 +30,9 @@ depends_on: []
 
 - CLI/API で作成・リンク・既存 Issue/PR の登録を行い、UI が必要な設定を分ける。ユーザー操作待ちは `needs-user-action` を付け、完了報告・設定内容を確認するまで未完了にする。
 - Auto-add to project は対象リポジトリと `is:issue,pr is:open` 等のフィルター、enabled 状態を確認し、設定内容または画像を Issue に残す。Auto-add sub-issues だけで全 Issue/PR の自動追加済みと判定しない。
-- 着手時に対象 Project item の Status を In Progress に更新する。完了時は Issue の close と Done の両方を確認する。Auto-add は着手状態を更新しない。
+- Status に Todo / In Progress / In Review / Waiting / Done を用意する。既存 option の ID・値を保持して不足分だけ追加する。GraphQL の `updateProjectV2Field` で singleSelectOptions を更新する場合は、既存 option の id / name / color / description を取得して引き継ぎ、既存 item の Status が消えていないことを再取得確認する。
+- 未着手は label や依存関係にかかわらず Todo を維持し、In Review / Waiting は着手後の実際の待機に限る。
+- 着手は In Progress、人間の確認・判断・入力・操作待ちは In Review、ベンチマーク・ジョブ・依存 Issue 等の完了待ちは Waiting にする。人間の対応が必要なら In Review を優先し、`needs-user-action` label と併用する。処理待ちだけではこの label を付けない。待機対象・解除条件・再開手順を Issue に記録し、解除後の実作業再開時は In Progress へ戻す。完了時は Issue close と Done の両方を確認する。Auto-add は Status 更新の代わりにならない。
 
 - Project を作成する。リポジトリの準備状況に応じて、対象リポジトリへリンクする。
 - Issue と Pull Request の自動追加設定を確認する。
@@ -74,6 +76,7 @@ gh project link "$PROJECT_NUMBER" --owner "$OWNER" --repo "$REPO"
 | Issue / PR の登録 | `addProjectV2ItemById` |
 | ビューの作成 | `createProjectV2View` の `name` / `layout: BOARD_LAYOUT` / `configuration.visibleFieldIds` |
 | ビューの更新 | `updateProjectV2View` の `viewId` / `name` / `layout` / `filter` / `configuration.visibleFieldIds` |
+| Status の選択肢追加 | `updateProjectV2Field` の `singleSelectOptions`（既存 option ID を保持） |
 | Status の更新 | `updateProjectV2ItemFieldValue` と実在する single-select option ID |
 | 設定の再取得 | `ProjectV2.views` の `name` / `layout` / `filter` / `fields` / `groupByFields` / `verticalGroupByFields` / `sortByFields` |
 
@@ -141,6 +144,7 @@ gh project view "$PROJECT_NUMBER" --owner "$OWNER" --web
 
 # 完了条件
 
+- 5つの Status option と既存 item の値、人間対応待ち / 処理待ちの分類を再取得確認済み。
 - 3つの Board ビューが指定順で保存され、共通の表示設定・Milestone レーン・表示フィールドと各 filter の表示・除外を確認済み。
 - API 更新後の再取得と UI 再読込で設定が保存され、自動追加の対象・filter・enabled を確認済み。未確認やユーザー操作待ちが残っていない。
 
