@@ -103,6 +103,13 @@ async function createTaskIssues({ github, context, directory = 'tasks' }) {
       }
     }
   }
+  const indexPath = path.join(directory, 'README.md');
+  const index = fs.readFileSync(indexPath, 'utf8');
+  const linkedIndex = index.replace(/\]\(([^)\r\n]+)\)/g, (link, filename) => {
+    const issue = existing.get(filename);
+    return issue ? `](${issue.html_url})` : link;
+  });
+  if (linkedIndex !== index) fs.writeFileSync(indexPath, linkedIndex);
   return parent.html_url;
 }
 module.exports = { parseTask, loadTasks, createTaskIssues };
