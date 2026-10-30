@@ -1,7 +1,7 @@
 ---
 title: "リポジトリを公開する"
+milestone: "07 競技終了後"
 labels:
-  - phase:after-competition
   - type:task
   - type:documentation
 depends_on:
@@ -88,3 +88,4 @@ gh repo edit "$REPO" --visibility private --accept-visibility-change-consequence
 
 - 公開可否の判断と実施結果が Issue に残っている。
 - 秘密情報を公開していない。
+

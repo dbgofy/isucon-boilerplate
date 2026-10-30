@@ -1,165 +1,81 @@
 ---
-title: "初期状態のベースラインを計測する"
+title: "提供状態の初回ベンチマークを追加計測なしで実行する"
 needs-user-action: true
+milestone: "03 競技開始直後"
 labels:
-  - phase:early-competition
   - type:performance
   - type:experiment
 depends_on:
-  - initialize-servers.md
+  - check-portal.md
+  - backup-initial-state.md
 ---
 
 # 目的
 
-改善前の性能とエラー状況を計測し、後続の判断基準を作る。
+ポータル確認と初期データの退避後、提供されたアプリケーション・DB・nginx の状態で動作と初期スコアを確認する。計測導入後の2回目とは別 Issue にする。
+
+# ユーザー確認
+
+1. 実行する（対象と負荷実行の許可を確認する）
+2. 今回は実行しない（未完了のまま保留する）
+3. 手順だけ作成する（実機・外部サービスには触れない）
+
+必要な情報: ポータル・正しいマニュアル、対象環境、実行範囲・時間帯、初回のみ追加計測を省略することの確認。既に回答済みの内容は再質問しない。
 
 # 前提条件
 
-- ベンチマークの実行方法はマニュアル / ポータルを正とする。推測で負荷をかけない。
-- 実測していない値を書かない。
+- ポータル・マニュアルから実行方法と対象環境、負荷実行の許可を確認する。
+- 初期データのバックアップを取得し、一時領域に保持している。
+- Git 初期化、SSH/Git 設定完了、構成図、計測導入はベンチ実行の必須条件ではない。
+- この1回は追加ログ・profile・OS/DB 指標の計測を省略する方針をユーザーと確認し Issue に記録する。他の回に省略を一般化しない。
 
-# 対象サーバー
+# 対象
 
-ベンチ対象として Issue に記録した構成。
+ユーザーが指定した初期構成。SSH/Git 初期設定済みかどうかと、アプリ提供状態を維持しているかを区別して記録する。
 
 # 作業
 
-- ベンチマーク条件と対象構成を記録する。
-- 初期状態でベンチマークを実行する。
-- スコア、エラー、レイテンシ、CPU、メモリ、I/O、DB 指標を保存する。
-- 実行日時と commit を記録する。
-- Issue と Pull Request に結果を記載する。
-- default branch で実行した各ベンチマークについて、実行時の exact commit を target とする GitHub Release を作成する。
+- ポータル到達性と待機中・実行中のジョブを確認する。不通時は開始せず、復旧時の重複投入を防ぐ。
+- 提供されたアプリ・DB・nginx を維持し、追加ログ・profile 等を有効化しない。ログローテーションや build / deploy も初回のために行わない。
+- 実行条件、開始・終了日時、実 Job ID、対象・環境識別を記録し、確認済みの方法で1回実行する。
+- スコア、成功・失敗、エラー、timeout、処理量など取得できた結果を Issue に記録する。欠測は省略理由を明示し、推測値で補わない。
+- 実行時の各サーバーの exact commit を取得できれば記録する。未初期化の場合は未対応付けと記録し、後から初期化した commit を実行時 commit と偽らない。
+- 初回の成功・失敗を問わず `bench-<id>` Release を作り、初期バックアップと結果を添付する。初期バックアップのサイズ・SHA-256 を照合し、取得 Issue と相互リンクする。
+- 再作成環境で Job ID がリセットされた場合は、instance 識別と実 Job ID を含む一意な `<id>` を使い、UI ID との対応を記録する。既存 Release を上書きしない。
 
 ## 実行例
 
-コマンドは実行例である。問題や環境によって構成、パス、サービス名、接続方法は異なる。Issue に記録したユーザー提供情報と実機の状態に合わせて読み替える。
+実行方法は確認したマニュアル・ポータルを正とし、対象やコマンドを推測しない。
 
 ```bash
-STAMP=$(date +%Y%m%d-%H%M%S)
-DIR="/tmp/isucon-work/${STAMP}-baseline"
-mkdir -p "$DIR"
-SERVERS=(s1 s2 s3)
+mkdir -p /tmp/isucon-work/initial-benchmark
+# 実行条件・実 Job ID・結果をこの一時領域と Issue に保存する。
+# 初期化済みの場合だけ、実行前に各サーバーの commit と状態を取得する。
+# ssh HOST 'git -C / rev-parse HEAD; git -C / status --short'
 ```
 
-## 1. 条件を記録する
-
-計測前のコミットを保存し、後で Release に使う。各サーバーのコミットが異なる場合は構成を記録し、対象を確認する。
+Release は実行前に確認した exact commit を target とする。Git 未初期化なら、管理用リポジトリの参照 commit とアプリ実行状態が未対応付けであることを Release に明記する。再現可能な初期アプリの対応付けは後続で補い、初期化済みと偽らない。
 
 ```bash
-TARGET_COMMIT=$(ssh s1 'git -C / rev-parse HEAD')
-printf "%s\n" "$TARGET_COMMIT" > "$DIR/target-commit.txt"
-```
-
-```bash
-{
-  echo "stamp=$STAMP"
-  echo "commit=$TARGET_COMMIT"
-  echo "servers=${SERVERS[*]}"
-  echo "condition: 初期状態。変更内容は Issue に書く。"
-} | tee "$DIR/meta.txt"
-```
-
-## 2. 計測直前にログを切る
-
-`prepare-logrotate.md` の手順がある場合はそれを使う。
-
-```bash
-for s in "${SERVERS[@]}"; do
-  ssh "$s" 'cd / && make rotate-logs' || true
-done
-```
-
-## 3. ベンチマークを実行する
-
-ポータルまたはマニュアル記載の方法で実行する。実行コマンドは確認した原文を Issue に貼る。
-
-```bash
-# 例: ポータル上で Start する
-# 例: 運営配布の bench バイナリを指定オプションで実行する
-```
-
-## 4. スコアと資源状況を保存する
-
-スコアはポータルまたは bench 出力から転記する。捏造しない。
-
-```bash
-for s in "${SERVERS[@]}"; do
-  ssh "$s" 'bash -s' <<'EOF' > "$DIR/${s}-sar.txt"
-hostname
-date -Is
-uptime
-free -h
-df -h
-ss -s
-nproc
-ps aux --sort=-pcpu | head -n 20
-EOF
-done
-```
-
-アクセスログ集計がある場合はベンチ後に取る。
-
-```bash
-ssh s1 'sudo alp ltsv --file /var/log/nginx/access.log --sort sum -r | head -n 40' \
-  > "$DIR/alp.txt" || true
-```
-
-## 5. Issue に結果を書く
-
-```bash
-gh issue comment "$ISSUE" --body "$(cat <<EOF
-## ベースライン ${STAMP}
-
-\`\`\`
-$(cat "$DIR/meta.txt")
-\`\`\`
-
-- スコア: （ポータルの実測値）
-- エラー:
-- 保存先: \`$DIR\`
-- 成功 / 失敗:
-EOF
-)"
-```
-
-## 6. GitHub Release を作成する
-
-ベンチマークごとに、実行時に取得した default branch の exact commit を target にしてReleaseを作成する。スコアが0点またはfailでもReleaseを省略しない。ベースラインであることを明記し、最終結果として扱わない。
-
-```bash
-TARGET_COMMIT=$(cat "$DIR/target-commit.txt")
-TAG="baseline-${STAMP}-score-${SCORE}"
-gh release create "$TAG" \
-  --repo "$REPO" \
-  --target "$TARGET_COMMIT" \
-  --title "baseline ${STAMP} score ${SCORE}" \
-  --notes "$(cat <<EOF
-- 種別: ベースライン
-- 実行日時: ${STAMP}
-- 対象 commit: ${TARGET_COMMIT}
-- 対象サーバー: ${SERVERS[*]}
-- 条件: Issue を参照
-- スコア: ${SCORE}
-- エラー: ${ERRORS}
-- 関連 Issue: #${ISSUE}
-EOF
-)"
+# 値は実測・事前記録で埋める。未設定のまま実行しない。
+# gh release create "bench-${BENCH_ID}" --repo "$REPO" \
+#   --target "$RECORDED_COMMIT" --notes-file "$NOTES_FILE"
+# gh release upload "bench-${BENCH_ID}" "$BACKUP_ARCHIVE" --repo "$REPO"
 ```
 
 # 確認方法
 
-```bash
-ls -l "$DIR"
-cat "$DIR/meta.txt"
-```
+- 実 Job ID、開始・終了、結果、実行条件、計測省略の確認、commit 対応付けの可否が読める。
+- Release に初期バックアップが添付され、元のサイズ・digest と一致する。
+- 初回結果と計測ありの2回目を混在させていない。
 
 # 失敗時の復旧
 
-- ベンチが開始できない: ポータルと initialize 要否をマニュアルで再確認する。アプリを推測で叩かない。
-- 途中失敗: 失敗時点のログを `$DIR` に残し、スコア欄は空または「失敗」と書く。
+- ポータル不通・再作成中: retry と重複投入を止め、ユーザー提供情報に従って待機する。
+- ベンチ失敗: fail と取得できた出力を保存し、Release とバックアップ添付を省略しない。
+- 添付失敗: 一時領域の原本を保持し、添付・照合が終わるまで未完了とする。再起動前にローカル等へ退避する。
 
 # 完了条件
 
-- 再比較できるベースラインが保存されている。
-- 実測していない値を記載していない。
+- 初回の実測結果と条件を記録し、初回 Release とバックアップの添付・照合を完了している。
+- 2回目の Issue が別に存在し、必要な計測導入との依存関係が確認できる。

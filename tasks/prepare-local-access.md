@@ -1,8 +1,8 @@
 ---
 title: "ローカルの接続設定を用意する"
 needs-user-action: true
+milestone: "03 競技開始直後"
 labels:
-  - phase:start
   - type:infrastructure
   - type:task
 depends_on:
@@ -16,7 +16,7 @@ depends_on:
 
 # 前提条件
 
-- 接続先、IP、鍵の場所はユーザー提供情報、または `apply-provided-infra.md` の適用結果を正とする。
+- 接続先、IP はユーザー提供情報、または `apply-provided-infra.md` の適用結果を正とする。
 - 秘密鍵はリポジトリに保存しない。
 
 # 対象サーバー
@@ -46,7 +46,7 @@ depends_on:
 - 接続先 (IP または DNS):
 - 初回 SSH ユーザー: isucon
 - 初期化後 SSH ユーザー: root
-- IdentityFile のパス（リポジトリ外）:
+- 認証方法: 既存 OpenSSH 設定・SSH agent・デフォルト鍵を使用。失敗時のみ追加確認:
 - 名前解決が必要か:
 ```
 
@@ -63,28 +63,22 @@ touch ~/.ssh/config
 chmod 600 ~/.ssh/config
 ```
 
-追記例。ファイル全体を書き直さない。`HostName` と `IdentityFile` は Issue の値で置き換える。
+追記例。ファイル全体を書き直さない。`HostName` は Issue の値で置き換える。既存 OpenSSH 設定・SSH agent・デフォルト鍵を先に試し、IdentityFile の指定を必須の追加質問にしない。必要な場合だけ認証方法を確認し、秘密鍵の内容は読まない。
 
 ```sshconfig
 Host s1
   HostName REPLACE_WITH_USER_PROVIDED_IP
   User isucon
-  IdentityFile ~/.ssh/REPLACE_WITH_USER_PROVIDED_KEY
-  IdentitiesOnly yes
   StrictHostKeyChecking accept-new
 
 Host s2
   HostName REPLACE_WITH_USER_PROVIDED_IP
   User isucon
-  IdentityFile ~/.ssh/REPLACE_WITH_USER_PROVIDED_KEY
-  IdentitiesOnly yes
   StrictHostKeyChecking accept-new
 
 Host s3
   HostName REPLACE_WITH_USER_PROVIDED_IP
   User isucon
-  IdentityFile ~/.ssh/REPLACE_WITH_USER_PROVIDED_KEY
-  IdentitiesOnly yes
   StrictHostKeyChecking accept-new
 ```
 

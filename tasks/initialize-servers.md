@@ -1,8 +1,8 @@
 ---
 title: "競技サーバーを初期化し Git 管理へ登録する"
 needs-user-action: true
+milestone: "03 競技開始直後"
 labels:
-  - phase:start
   - type:infrastructure
   - type:deployment
 depends_on:
@@ -17,7 +17,7 @@ depends_on:
 # 前提条件
 
 - `prepare-repo.md`、`prepare-local-access.md` が完了している。
-- レギュレーション確認 (`read-regulation.md`) とマニュアル確認 (`read-manual.md`) は依存ではない。並行して進めてよい。
+- 規則の読解全体は並行してよいが、SSH 鍵配布や設定変更に必要な許可・制約は実行前に確認する。
 - 接続先、SSH ユーザー、鍵は Issue に記録したユーザー提供情報を使う。推測で決めない。
 - `git reset --hard` は初期セットアップ時だけ使う。既に `/.git` があるサーバーでは実行しない。
 
@@ -27,12 +27,17 @@ Issue に記録した全競技サーバー。各サーバーで同じ手順を�
 
 # 作業
 
+- reset 前に各サーバー自身の設定原本を安全な一時領域へ退避し、owner/mode を保存する。取り込み後は原本内容と所有者・権限を復元し、Git 登録と初回 permissions save より先に検証する。sudoers の 0440 等を他サーバーの値で上書きしない。
+- `sshd -t` / `visudo -c` 後、実在する `ssh.service` / `sshd.service` を選んで reload できることを確認する。必要な Makefile 修正はローカルで commit し `git pull` する。
+- GNU make の暗黙ルールによる `files/gitignore.sh` から `files/gitignore` の誤生成を防ぐ明示ターゲットと、再実行時の挙動を確認する。
+- hook 実行後に `.gitignore` 自体の追跡を確認し、原本保存後に必要な場合だけ `git add -f .gitignore` する。hook は削除・変更しない。
+
 - 初回セットアップ時だけ `isucon` ユーザーで SSH 接続する。
 - `/` に Git リポジトリを作成し、origin と default branch を設定する。
 - 必要なファイルだけを whitelist 形式で追加する。
 - `/home/isucon` のアプリケーションソースを明示的に追加する。
 - 設定ファイルは変更前の原本を追加して commit する。
-- 初期状態をバックアップする。
+- 初期データのバックアップは `backup-initial-state.md` で別に取得する。Git 初期化の完了を取得の必須条件にしない。
 - 初期セットアップ完了後、root での SSH 接続を確認する。
 
 ## 実行例
@@ -77,6 +82,8 @@ cat /root/.ssh/id_rsa.pub
 表示された公開鍵を [Deploy key](https://github.com/OWNER/REPOSITORY/settings/keys/new) に登録する。サーバーから `git push` するため、Allow write access を有効にする。秘密鍵はリポジトリに保存しない。
 
 ## 4. `/` を Git 作業ツリーにしてリポジトリを取り込む
+
+以下の reset より前に、そのサーバーの変更対象設定を退避し owner/mode を記録する。取り込みで既存ファイルが上書きされる場合は、退避した原本と属性を戻してから次節の原本 commit に進む。初回 permissions save に誤った権限を保存しない。
 
 ```bash
 cd /
@@ -151,6 +158,10 @@ git push -u origin "$BRANCH"
 
 ## 9. 手元の公開鍵で root 接続できる状態にする
 
+鍵の配布方法は確認した規則に従う。workflow が 404 の場合は default branch 上のファイルと Actions 認識を分けて調べ、空コミットだけで原因を確定しない。files/pubkey の実変更で認識された事例はあるが、無意味な変更を解決策として固定しない。
+
+files/pubkey と files/hosts を同時更新する場合、同一 branch への書き込みを直列化し、明示的な同期方針と差分なし commit を扱える workflow であることを確認する。競合時は他の書き込みを止めて最新状態から再実行し、生成した鍵を取り込み root 接続を確認する。
+
 GitHub Actions の Update SSH Keys が collaborator の公開鍵を `root/.ssh/authorized_keys` に書く。workflow 完了後にサーバーで取り込む。
 
 ```bash
@@ -213,3 +224,4 @@ done
 - Git 管理対象に秘密鍵、DB データ、バイナリ、実行時生成データが含まれていない。
 - 以後の同期をローカル変更と `git pull` で行える。
 - 各サーバーへ root で SSH できる。
+

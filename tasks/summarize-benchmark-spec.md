@@ -1,7 +1,7 @@
 ---
 title: "ベンチマーク仕様をまとめる"
+milestone: "03 競技開始直後"
 labels:
-  - phase:start
   - type:documentation
   - type:task
 depends_on:

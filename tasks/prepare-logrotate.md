@@ -1,7 +1,7 @@
 ---
 title: "ログローテーションを用意する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:observability
   - type:task
 depends_on:
@@ -23,6 +23,8 @@ depends_on:
 `LOG_FILES` へ明示して渡す。未確認のサーバー固有パスは既定値に追加しない。
 
 # 作業
+
+- nginx と MySQL の `error.log` 等、同名ファイルを同じ保存先へ上書きしない。サーバー・サービス別ディレクトリ、または `nginx-error.log` / `mysql-error.log` のように保存名を分ける。
 
 - アクセスログ、スロークエリログ、アプリケーションログのパスを確認する。
 - ベンチマーク前後で切る対象と、退避先を決める。
@@ -115,3 +117,4 @@ ssh s1 'ls -lt /var/log/archive | head; sudo tail -n 1 /var/log/nginx/access.log
 
 - 計測ごとにログを分けて保存できる。
 - 手順がリポジトリまたは Issue に残っている。
+

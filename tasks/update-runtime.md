@@ -1,7 +1,7 @@
 ---
 title: "言語ランタイムを更新する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:infrastructure
   - type:application
 depends_on:
@@ -23,6 +23,9 @@ depends_on:
 アプリケーションを動かすサーバー。
 
 # 作業
+
+- root の PATH にコマンドがなくても未導入と断定しない。提供 toolchain の実体と稼働 binary の build 情報を照合し、compiler / binary の版を分けて記録する。MySQL 等の package revision、サーバー別の稼働サービス差も残す。
+- 観測時刻・サーバー・commit を記録し、環境詳細を `knowledges/`、概要とリンクを README に保存する。shell の ulimit と systemd の LimitNOFILE を区別する。
 
 - 現在の言語、コンパイラ、ランタイムの版を確認する。
 - レギュレーション上の制約を確認する。

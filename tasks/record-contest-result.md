@@ -1,7 +1,7 @@
 ---
 title: "競技結果を GitHub Release に記録する"
+milestone: "07 競技終了後"
 labels:
-  - phase:after-competition
   - type:documentation
   - type:task
 depends_on:
@@ -107,3 +107,4 @@ gh release view "$TAG" --repo "$REPO"
 
 - GitHub Release から対象 commit、変更内容、関連 Issue・PR、スコアを確認できる。
 - 推測や未確認事項が明示されている。
+

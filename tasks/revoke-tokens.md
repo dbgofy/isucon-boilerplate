@@ -1,7 +1,7 @@
 ---
 title: "通知用 token を revoke する"
+milestone: "07 競技終了後"
 labels:
-  - phase:after-competition
   - type:security
   - type:task
 depends_on:

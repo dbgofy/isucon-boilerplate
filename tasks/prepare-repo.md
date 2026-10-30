@@ -1,7 +1,7 @@
 ---
 title: "競技用リポジトリを準備する"
+milestone: "01 事前準備"
 labels:
-  - phase:day-before
   - type:task
   - type:documentation
 depends_on: []
@@ -23,10 +23,10 @@ depends_on: []
 # 作業
 
 - リポジトリの公開範囲とメンバー権限を確認する。
-- default branch を確認する。
+- default branch と Issues の有効状態を確認する。報告先で Issues が無効なら、管理権限・ユーザーの許可範囲を確認してから有効化する。
 - Pull Request の更新提案、head branch の自動削除など、運用に必要なリポジトリ設定を確認する。
 - `README.md`、`tasks/` の運用方針を確認する。
-- 競技サーバーの接続情報と役割をユーザーから受け取り、Issue に記録する。
+- 競技開始前に公開済みの情報だけで完了を判定する。サーバー情報は `prepare-local-access.md`、鍵配布の規則は `read-regulation.md` / `read-manual.md`、適用は `initialize-servers.md` で扱う。
 
 ## 実行例
 
@@ -40,20 +40,18 @@ REPO=OWNER/REPOSITORY
 
 ```bash
 gh repo view "$REPO" --json name,visibility,defaultBranchRef,url,isPrivate
-gh api "repos/${REPO}" --jq '{default_branch,allow_squash_merge,allow_rebase_merge,allow_merge_commit,delete_branch_on_merge,allow_update_branch}'
+gh api "repos/${REPO}" --jq '{default_branch,has_issues,allow_squash_merge,allow_rebase_merge,allow_merge_commit,delete_branch_on_merge,allow_update_branch}'
 gh api "repos/${REPO}/collaborators" --jq '.[] | {login,role_name}'
 ```
 
 ## 2. メンバーを招待する
 
-README の手順。organization レベルで権限が付いている場合は招待をスキップし、Update SSH Keys のワークフロー実行だけ行う。
+ユーザーが Organization でメンバー設定済みと明示した場合は再確認・個別招待を省略し、その根拠を記録する。SSH 鍵更新 workflow の実行は競技開始後の初期化で扱う。
 
 ```bash
 # 権限はユーザー指定。未指定なら確認する。
 # organization レベルで権限がある場合は招待しない。
 # gh api -X PUT "repos/${REPO}/collaborators/LOGIN" -f permission=push
-gh workflow run update-sshkeys.yml --repo "$REPO"
-gh run list --workflow=update-sshkeys.yml --repo "$REPO" --limit 3
 ```
 
 ## 3. PR 運用に必要な設定を確認する
@@ -78,7 +76,7 @@ git remote -v
 
 ## 5. 接続情報の受け取り欄を Issue に用意する
 
-競技サーバーの IP と役割はユーザーから受け取る。このタスクでは空欄を用意する。
+競技開始後の接続設定 Issue で受け取る情報の欄を用意してよい。未公開の欄は「開始後に受領」と記録し、このタスクの完了を妨げない。
 
 ```bash
 gh issue comment "$ISSUE" --body "$(cat <<'EOF'
@@ -107,6 +105,6 @@ gh api "repos/${REPO}/collaborators" --jq '.[].login'
 # 完了条件
 
 - チームメンバーがリポジトリを利用できる。
-- 接続情報の不足や権限エラーがない。
+- リポジトリの権限と PR 運用設定が確認できている。未公開の接続情報、鍵配布方法、今すぐ不要な workflow の問題を未完了理由にしない。
 - 競技開始後に初期準備 Issue を作成できる。
 

@@ -1,7 +1,7 @@
 ---
 title: "再起動試験（1回目）"
+milestone: "05 競技中盤"
 labels:
-  - phase:mid-competition
   - type:validation
   - type:deployment
 depends_on:

@@ -1,7 +1,7 @@
 ---
 title: "初期スキーマとインデックスを確認する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:database
   - type:documentation
 depends_on:
@@ -22,6 +22,8 @@ depends_on:
 DB が動いているサーバー。配置は `check-environment.md` の記録を使う。
 
 # 作業
+
+- 初回ベンチ後の観測ならその時刻と commit を明記し、初期状態と断定しない。`information_schema.table_rows` は概算であり、正確な件数とは記録しない。詳細は `knowledges/` に保存し README からリンクする。
 
 - スキーマ定義の場所を確認する。
 - 既存インデックスと主キー、外部キーを一覧する。

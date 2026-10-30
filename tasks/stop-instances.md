@@ -1,7 +1,7 @@
 ---
 title: "不要なインスタンスを停止する"
+milestone: "07 競技終了後"
 labels:
-  - phase:after-competition
   - type:infrastructure
   - type:deployment
 depends_on:
@@ -98,3 +98,4 @@ EOF
 
 - 停止対象と残置対象が記録されている。
 - 運営管理の環境を、許可なく停止していない。
+
