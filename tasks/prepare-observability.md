@@ -24,8 +24,8 @@ Issue に記録した全競技サーバー。
 # 作業
 
 - 2回目の実走に必要な対象1台の最小採取、停止、collector の短い smoke を先に整える。全台の包括的検証や Grafana の起動待ちで実走を遅らせず、残る検証は別に追跡する。
-- nohup の stdout/stderr/stdin を明示的に redirect して SSH の終了待ちを防ぐ。サービスごとのログを一時領域に分ける。
-- 監視は loopback bind と各ホストの localhost scrape を使い、SSH tunnel で閲覧する。追加の Security Group 開放を前提にしない。
+- `make monitoring` で起動するプロセス、その起動レシピ（Makefile を含む）や Prometheus・Grafana・exporter などの関連設定は変更しない。
+- webapp、nginx、MySQL などの計測に必要なコード・設定と、それらのための Makefile の変更は行ってよい。
 - pprof・追加 nginx log は runtime marker、slow log は runtime 変数等で切り替え、再起動後に自動有効化しない。Go のログ呼び出しは利用版の vet が通る形にする。
 - native record/report の期限と専用 process group 停止、欠測保存、他採取との分離と archive 前 barrier を用意する。詳細の採取・分析は `run-instrumented-benchmark.md` に従う。
 
