@@ -7,6 +7,22 @@ const { createTaskIssues, loadTasks } = require('./create-task-issues.cjs');
 
 const context = { repo: { owner: 'team', repo: 'contest' } };
 const issueUrl = number => `https://github.com/team/contest/issues/${number}`;
+const milestone = loadTasks(path.resolve(__dirname, '../../tasks'))[0].milestone;
+
+function taskTemplate(title, dependencies = []) {
+  return [
+    '---',
+    `title: ${JSON.stringify(title)}`,
+    ...(milestone ? [`milestone: ${JSON.stringify(milestone)}`] : []),
+    'labels:',
+    '  - type:task',
+    dependencies.length ? 'depends_on:' : 'depends_on: []',
+    ...dependencies.map(filename => `  - ${filename}`),
+    '---',
+    `Task ${title}`,
+    '',
+  ].join('\n');
+}
 
 function temporaryTasks(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'common-tasks-test-'));
@@ -17,6 +33,7 @@ function temporaryTasks(t) {
 function mockGithub(initialIssues = []) {
   const issues = structuredClone(initialIssues);
   const labels = [];
+  const milestones = [];
   const children = new Set();
   const dependencies = new Map();
   let nextNumber = Math.max(0, ...issues.map(issue => issue.number)) + 1;
@@ -25,14 +42,21 @@ function mockGithub(initialIssues = []) {
     rest: { issues: {
       listForRepo() {},
       listLabelsForRepo() {},
+      listMilestones() {},
       async createLabel({ name }) {
         state.writes++;
         labels.push({ name });
       },
-      async create({ title, body, labels }) {
+      async createMilestone({ title }) {
+        state.writes++;
+        const milestone = { number: milestones.length + 1, title };
+        milestones.push(milestone);
+        return { data: milestone };
+      },
+      async create({ title, body, labels, milestone }) {
         state.writes++;
         const number = nextNumber++;
-        const issue = { id: number + 1000, number, title, body, labels, state: 'open', html_url: issueUrl(number) };
+        const issue = { id: number + 1000, number, title, body, labels, milestone, state: 'open', html_url: issueUrl(number) };
         issues.push(issue);
         return { data: issue };
       },
@@ -40,6 +64,7 @@ function mockGithub(initialIssues = []) {
     async paginate(endpoint, params) {
       if (endpoint === github.rest.issues.listForRepo) return issues;
       if (endpoint === github.rest.issues.listLabelsForRepo) return labels;
+      if (endpoint === github.rest.issues.listMilestones) return milestones;
       if (endpoint.endsWith('/sub_issues')) return [...children].map(id => ({ id }));
       if (endpoint.endsWith('/dependencies/blocked_by')) {
         return [...(dependencies.get(params.issue_number) || [])].map(id => ({ id }));
@@ -95,8 +120,8 @@ test('all task index links still work after initialization removes the templates
 
 test('a failed dependency leaves the index intact and retries reuse existing issues', async t => {
   const directory = temporaryTasks(t);
-  fs.writeFileSync(path.join(directory, 'a.md'), '---\ntitle: A\nlabels:\n  - type:task\ndepends_on: []\n---\nTask A\n');
-  fs.writeFileSync(path.join(directory, 'b.md'), '---\ntitle: B\nlabels:\n  - type:task\ndepends_on:\n  - a.md\n---\nTask B\n');
+  fs.writeFileSync(path.join(directory, 'a.md'), taskTemplate('A'));
+  fs.writeFileSync(path.join(directory, 'b.md'), taskTemplate('B', ['a.md']));
   const original = '[A](a.md)\n[B](b.md)\n[Guide](guide.md)\n[External](https://example.com/)\n';
   const indexPath = path.join(directory, 'README.md');
   fs.writeFileSync(indexPath, original);
@@ -126,7 +151,7 @@ test('a failed dependency leaves the index intact and retries reuse existing iss
 
 test('a README without task index links remains unchanged', async t => {
   const directory = temporaryTasks(t);
-  fs.writeFileSync(path.join(directory, 'a.md'), '---\ntitle: A\nlabels:\n  - type:task\ndepends_on: []\n---\nTask A\n');
+  fs.writeFileSync(path.join(directory, 'a.md'), taskTemplate('A'));
   const original = '# Operations\n\nManage progress in the common parent issue.\n';
   const indexPath = path.join(directory, 'README.md');
   fs.writeFileSync(indexPath, original);
