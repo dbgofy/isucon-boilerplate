@@ -1,6 +1,5 @@
 ---
 title: "運営提供のインフラを適用する"
-needs-user-action: true
 milestone: "03 競技開始直後"
 labels:
   - type:infrastructure

@@ -1,6 +1,5 @@
 ---
 title: "ローカルの接続設定を用意する"
-needs-user-action: true
 milestone: "03 競技開始直後"
 labels:
   - type:infrastructure
