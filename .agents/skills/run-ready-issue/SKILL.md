@@ -1,5 +1,5 @@
 ---
-name: advance-unblocked-issue
+name: run-ready-issue
 description: GitHub の未ブロック Issue を選び、前段マイルストーンを確認して、自分へのアサイン、ステータス更新、実行、完了検証、クローズまで進める。Issue の実行を依頼された場合に使う。
 ---
 
