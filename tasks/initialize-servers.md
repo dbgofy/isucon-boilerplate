@@ -101,6 +101,7 @@ git status
 
 ```bash
 cd /
+test -e /.gitignore || cp -n /files/gitignore /.gitignore
 ls -l /etc/sudoers /etc/ssh/sshd_config /etc/nginx /etc/mysql /etc/systemd/system
 for f in \
   /etc/sudoers \

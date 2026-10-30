@@ -81,7 +81,7 @@ gh repo view "$REPO" --json visibility,isPrivate,url
 - 誤って public にした: 直ちに private へ戻す。
 
 ```bash
-gh repo edit "$REPO" --visibility private
+gh repo edit "$REPO" --visibility private --accept-visibility-change-consequences
 ```
 
 # 完了条件

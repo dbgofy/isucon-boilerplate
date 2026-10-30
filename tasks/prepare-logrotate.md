@@ -50,7 +50,7 @@ done
 
 ## 2. ローカルに毎回同じコマンドを書く
 
-退避先は `/var/log/archive/` など、Git 管理外にする。`make rotate-logs` は既定で
+退避先は `/var/log/archive/` など、Git 管理外にする。事前に `mkdir -p /var/log/archive` で作成する。`make rotate-logs` は既定で
 Issue に確認済みの nginx access/error log を対象にし、存在しないファイルは無視する。
 追加のログは、実機で確認した後に `LOG_FILES` で明示する。
 
@@ -58,8 +58,13 @@ Issue に確認済みの nginx access/error log を対象にし、存在しな�
 LOG_ARCHIVE_ROOT ?= /var/log/archive
 LOG_FILES ?= /var/log/nginx/access.log /var/log/nginx/error.log
 
+.PHONY: rotate-logs
 rotate-logs:
-	# Makefile の rotate-logs を使用する。
+	@set -eu; dest=$$(mktemp -d "$(LOG_ARCHIVE_ROOT)/$$(date +%Y%m%d-%H%M%S)-XXXXXX"); \
+	for file in $(LOG_FILES); do \
+	  if [ -f "$$file" ]; then mkdir -p "$$dest$$(dirname "$$file")"; mv -- "$$file" "$$dest$$file"; fi; \
+	done; \
+	nginx -s reopen
 ```
 
 実機で確認済みの追加ログを切り出す場合:
