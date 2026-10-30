@@ -35,6 +35,6 @@ gh api graphql --paginate -f owner="$owner" -f name="$name" -f query='query($own
 jq -e -s '
   if length == 0 or any(.[]; (.errors // [] | length) > 0 or .data.repository.issues == null) then error("GitHub GraphQL response incomplete")
   elif any(.[0:-1][]; .data.repository.issues.pageInfo.hasNextPage != true) or .[-1].data.repository.issues.pageInfo.hasNextPage != false then error("Issue pagination incomplete")
-  else {repository: $repo, issues: [.[].data.repository.issues.nodes[] | . as $issue | . + {truncated: (["assignees", "labels", "blockedBy", "projectItems", "comments"] | map(select(. as $k | $issue[$k].pageInfo.hasNextPage != false)))}]} end
+  else {repository: $repo, graphqlPages: length, issues: [.[].data.repository.issues.nodes[] | . as $issue | . + {truncated: (["assignees", "labels", "blockedBy", "projectItems", "comments"] | map(select(. as $k | $issue[$k].pageInfo.hasNextPage != false)))}]} end
 ' --arg repo "$repo" "$tmp/pages.json" > "$tmp/result.json"
 cat "$tmp/result.json"
