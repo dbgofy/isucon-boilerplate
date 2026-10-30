@@ -105,7 +105,7 @@ Vim の自動処理に任せるだけでなく、設定ファイルの変更前�
 
 ## Issue と Pull Request
 
-共通タスクの予定時期は Milestone（01 事前準備〜07 競技終了後）で管理し、phase label は使わない。各タスクは実際に必要な依存関係と競技上の制約を確認し、可能な限り早く進める。前段 Milestone の close や無関係なタスクの完了を待たない。初回ベンチはポータルと対象・実行方法を確認でき次第、他の準備やバックアップを待たずに優先する。Project は着手時 In Progress、人間の対応待ちは In Review、処理・依存先待ちは Waiting、完了時 Issue close と Done を確認する。
+共通タスクの時期は Milestone（01 事前準備〜07 競技終了後）で管理し、phase label は使わない。Project は着手時 In Progress、人間の対応待ちは In Review、処理・依存先待ちは Waiting、完了時 Issue close と Done を確認する。
 
 変更を行う前に、必ず Issue に次を記載する。
 
