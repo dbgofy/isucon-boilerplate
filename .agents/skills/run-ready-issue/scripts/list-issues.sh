@@ -19,22 +19,21 @@ gh api graphql --paginate -f owner="$owner" -f name="$name" -f query='query($own
     issues(first: 100, after: $endCursor, states: OPEN, orderBy: {field: CREATED_AT, direction: ASC}) {
       pageInfo { hasNextPage endCursor }
       nodes {
-        number title url body state updatedAt
+        number title url state updatedAt
         milestone { title state url }
         assignees(first: 100) { nodes { login } pageInfo { hasNextPage } }
         labels(first: 100) { nodes { name } pageInfo { hasNextPage } }
         blockedBy(first: 100) { nodes { number title state url repository { nameWithOwner } } pageInfo { hasNextPage } }
         parent { number title state url }
         projectItems(first: 100) { nodes { project { title url } fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } } } pageInfo { hasNextPage } }
-        comments(first: 100) { nodes { body url updatedAt } pageInfo { hasNextPage } }
       }
     }
   }
 }' > "$tmp/pages.json"
 # 出力途中の失敗や GraphQL エラーを候補なしと誤認しない。
-jq -e -s '
+jq -c -e -s '
   if length == 0 or any(.[]; (.errors // [] | length) > 0 or .data.repository.issues == null) then error("GitHub GraphQL response incomplete")
   elif any(.[0:-1][]; .data.repository.issues.pageInfo.hasNextPage != true) or .[-1].data.repository.issues.pageInfo.hasNextPage != false then error("Issue pagination incomplete")
-  else {repository: $repo, graphqlPages: length, issues: [.[].data.repository.issues.nodes[] | . as $issue | . + {truncated: (["assignees", "labels", "blockedBy", "projectItems", "comments"] | map(select(. as $k | $issue[$k].pageInfo.hasNextPage != false)))}]} end
+  else {repository: $repo, graphqlPages: length, issues: [.[].data.repository.issues.nodes[] | . as $issue | . + {truncated: (["assignees", "labels", "blockedBy", "projectItems"] | map(select(. as $k | $issue[$k].pageInfo.hasNextPage != false)))}]} end
 ' --arg repo "$repo" "$tmp/pages.json" > "$tmp/result.json"
 cat "$tmp/result.json"
