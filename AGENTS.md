@@ -105,7 +105,7 @@ Vim の自動処理に任せるだけでなく、設定ファイルの変更前�
 
 ## Issue と Pull Request
 
-共通タスクの時期は Milestone（01 事前準備〜07 競技終了後）で管理し、phase label は使わない。Project は着手時 In Progress、完了時 Issue close と Done を確認する。
+共通タスクの時期は Milestone（01 事前準備〜07 競技終了後）で管理し、phase label は使わない。Project は着手時 In Progress、人間の対応待ちは In Review、処理・依存先待ちは Waiting、完了時 Issue close と Done を確認する。
 
 変更を行う前に、必ず Issue に次を記載する。
 
@@ -126,6 +126,19 @@ AI Agent の関与は label で管理しない。ユーザーの入力・判断�
 共通タスクは「ISUCON 共通タスク」Issue の sub-issue として登録する。
 依存関係は、複数の依存先を持てる GitHub の Issue dependency（blocked by）として登録する。
 依存関係を表すために、共通タスクの sub-issue の親を変更してはならない。
+
+
+### Project の Status
+
+| Status | 用途 |
+| --- | --- |
+| Todo | 未着手で、現在の確認待ち・処理待ちがない。 |
+| In Progress | 担当者が実作業・検証を進めている。 |
+| In Review | 人間の確認・レビュー・判断・入力・操作を待っている。 |
+| Waiting | ベンチマーク、非同期ジョブ、依存 Issue などの完了を待っている。 |
+| Done | 完了条件と後続の利用可否を検証し、Issue の close を確認した。 |
+
+待機時は Issue に待っている対象、現在の状態、解除条件、再開手順を記録し、Status の更新を再取得して確認する。人間の対応が必要なら In Review を優先し、`needs-user-action` label も付ける。Waiting は処理待ちだけを理由にこの label を付けない。待機が解除され実作業を再開するときは In Progress に戻し、人間対応が不要になった label を外す。未完了の待機を Todo や Done で代用しない。
 
 ### 実行に必要な情報が不足している場合
 
