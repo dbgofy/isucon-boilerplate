@@ -88,6 +88,7 @@ Git push に失敗しても、リモートには初期化用ファイルが残�
 ## 作業の開始と完了
 
 - 事前準備の開始時に競技名・公式レギュレーション URL、通知受信確認の状況、Project 自動追加の設定方針をまとめて確認する。
+- 未着手は label や依存関係にかかわらず Todo のままにする。In Review / Waiting は着手後に実際の待機が発生した場合だけ使用する。
 - Project の Status は Todo / In Progress / In Review / Waiting / Done を用意する。着手時は In Progress、人間の確認・判断・入力・操作待ちは In Review、ベンチマーク・ジョブ・依存 Issue 等の完了待ちは Waiting、完了時は Issue close と Done を確認する。待機対象・解除条件・再開手順を Issue に記録し、解除後は In Progress に戻す。人間対応が必要なら In Review を優先し、`needs-user-action` label と併用する。処理待ちだけではこの label を付けない。Auto-add と Status の更新を混同しない。
 - 実施済み・未実施・ユーザーが明示した省略を記録して完了を判定する。ユーザー操作待ちを完了と偽らない。
 - 初回ベンチは `03 競技開始直後` でポータル確認・初期バックアップ取得後に実行する。追加計測の省略は初回についてユーザーと確認する。計測ありの2回目は別 Issue とし、計測導入の最小検証後に実行する。

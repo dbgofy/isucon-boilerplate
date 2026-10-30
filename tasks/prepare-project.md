@@ -31,6 +31,7 @@ depends_on: []
 - CLI/API で作成・リンク・既存 Issue/PR の登録を行い、UI が必要な設定を分ける。ユーザー操作待ちは `needs-user-action` を付け、完了報告・設定内容を確認するまで未完了にする。
 - Auto-add to project は対象リポジトリと `is:issue,pr is:open` 等のフィルター、enabled 状態を確認し、設定内容または画像を Issue に残す。Auto-add sub-issues だけで全 Issue/PR の自動追加済みと判定しない。
 - Status に Todo / In Progress / In Review / Waiting / Done を用意する。既存 option の ID・値を保持して不足分だけ追加する。GraphQL の `updateProjectV2Field` で singleSelectOptions を更新する場合は、既存 option の id / name / color / description を取得して引き継ぎ、既存 item の Status が消えていないことを再取得確認する。
+- 未着手は label や依存関係にかかわらず Todo を維持し、In Review / Waiting は着手後の実際の待機に限る。
 - 着手は In Progress、人間の確認・判断・入力・操作待ちは In Review、ベンチマーク・ジョブ・依存 Issue 等の完了待ちは Waiting にする。人間の対応が必要なら In Review を優先し、`needs-user-action` label と併用する。処理待ちだけではこの label を付けない。待機対象・解除条件・再開手順を Issue に記録し、解除後の実作業再開時は In Progress へ戻す。完了時は Issue close と Done の両方を確認する。Auto-add は Status 更新の代わりにならない。
 
 - Project を作成する。リポジトリの準備状況に応じて、対象リポジトリへリンクする。
