@@ -31,7 +31,9 @@ Issue に記録した構成。計測対象と負荷対象、採取時間と実�
 
 # 作業
 
-- 各対象の exact commit、binary hash、計測設定、負荷条件、初回との条件差を実行前に記録する。
+ユーザーの指示がない限り、Issue コメントや Project 更新などを待たずベンチマークを開始し、記録・更新は並行する。
+
+- 各対象の exact commit、binary hash、計測設定、負荷条件、初回との条件差を取得し、Issue への記録はベンチマークと並行する。
 - ポータル到達と既存ジョブを確認してから採取・ベンチを開始し、実 Job ID と開始・終了を保存する。
 - profile、アクセス・エラーログ、DB slow log、OS/DB 指標を取得する。欠測のコマンド・exit・stderr・理由を残す。
 - native perf は record/report の期限、専用 process group の停止、限定 PID cleanup を設ける。非空でも未完成なら report 成功と扱わない。他の採取完了を native 後処理待ちから分け、archive 前には全 writer 終了を確認する。
