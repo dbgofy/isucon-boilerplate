@@ -27,7 +27,8 @@ Issue に記録した全競技サーバー。
 - 初期セットアップ後の SSH と build は root に統一し、利用する toolchain の実体を指定する。サービスの実行 User は維持する。root 所有 Git の所有者問題を safe.directory の全許可や buildvcs 無効化で回避しない。
 - exact commit、binary hash、build 実行ユーザー、toolchain の版を記録する。rollback の追跡ファイル差分は Issue に記録して保管し、確認してから git 同期を再開する。
 
-- `git pull`、ビルド、再起動、ログ確認の手順を決める。
+- 全対象サーバーで同じ commit に同期し、ベンチマーク対象のサーバーのうち確認済みの1台でビルドする。ビルド成果物を残りの対象サーバーへ `scp` でコピーし、各サーバーで配置、再起動、ログ確認する手順を決める。
+- 成果物のパス、配布先、所有者・権限、サーバー間の互換性と SSH 接続方法を実機で確認する。コピー失敗時は再起動せず、成功した配布先も含めて状態を確認する。
 - サーバーごとの差分は `hostname` で扱う。
 - 手順は Makefile など、リポジトリ上のコマンドにまとめる。
 - 反映前後の commit と対象サーバーを記録できる形にする。
@@ -35,79 +36,34 @@ Issue に記録した全競技サーバー。
 
 ## 実行例
 
-コマンドは実行例である。問題や環境によって構成、パス、サービス名、接続方法は異なる。Issue に記録したユーザー提供情報と実機の状態に合わせて読み替える。
+以下は手順の骨格であり、サーバー名、パス、サービス名、ビルド・配置方法はユーザー提供情報と実機確認に基づき決める。ビルド元はベンチマーク対象サーバーのうち1台とする。サーバー間の SSH 接続や成果物の互換性を確認する。
 
-```bash
-SERVERS=(s1 s2 s3)
-BRANCH=master
-```
+## 1. 対象とサービスを確認する
 
-## 1. 起動中のサービス名を確定する
+`check-environment.md` の記録と実機からビルド元、配布先、サービス名、成果物のパス、所有者・権限を確認する。ビルド成果物以外に配布が必要なファイルも確認する。
 
-`check-environment.md` の記録を正とする。未確認なら実機で確認する。
+## 2. デプロイ用コマンドを追加する
 
-```bash
-for s in "${SERVERS[@]}"; do
-  ssh "$s" 'hostname; systemctl list-units --type=service --state=running --no-pager | grep -iE "nginx|mysql|mariadb|isu|app|web"'
-done
-```
+ローカルで Makefile 等に以下の順序をまとめる。アプリ側に既存の restart スクリプトがあれば利用する。
 
-## 2. リポジトリにデプロイ用ターゲットを追加する
+1. 全対象サーバーで同じ指定 commit に同期し、commit と追跡ファイルの状態を確認する。
+2. ビルド元サーバーだけで、確認済みの toolchain を使い root でビルドする。
+3. ビルド成果物の hash を記録し、残りのサーバーに `scp` でコピーする。配布先では一時パスに転送して hash を照合し、所有者・権限を設定して配置する。
+4. 全対象サーバーで必要なサービスを再起動し、起動状態とログを確認する。
 
-ローカルで Makefile 等に、毎回同じ順で実行するコマンドを書く。サービス名は前段で確認した値だけ使う。
-
-```makefile
-.PHONY: deploy
-deploy:
-	git pull origin master
-	# ビルドと再起動は、マニュアルまたは実機で確認したコマンドに置き換える
-	# 例: cd /home/isucon/webapp && make
-	# 例: systemctl restart nginx
-```
-
-アプリ側に既存の restart スクリプトがある場合はそれを呼び、新規に別手順を増やさない。
-
-```bash
-find /home/isucon -maxdepth 3 -type f \( -name 'Makefile' -o -name '*restart*' -o -name 'deploy.sh' \) | sort
-```
+ビルドまたは転送・照合が失敗した場合は後続の再起動に進まない。設定やソースの同期は `git pull` で行い、ビルド成果物は Git に追加しない。監視用の `make monitoring` が起動するプロセスや関連設定には触れない。
 
 ## 3. 一度実行して起動を確認する
 
-ローカルで commit したあと、各サーバーで pull してデプロイする。
-
-```bash
-# ローカル
-git status
-git log -1 --oneline
-
-# 各サーバー
-for s in "${SERVERS[@]}"; do
-  ssh "$s" "cd / && git pull origin ${BRANCH} && make deploy"
-done
-```
-
-`make deploy` がまだ無い間の手動手順。
-
-```bash
-ssh s1 'bash -s' <<'EOF'
-set -eu
-cd /
-git pull origin master
-git log -1 --oneline
-# 以下は実機で確認したサービス名に置き換える
-# cd /home/isucon/webapp && make
-# systemctl restart nginx
-systemctl is-active nginx || true
-ss -lntp
-EOF
-```
+ローカルでコマンドを commit してから、確認済みの対象に対して実行する。ビルド元と各配布先の commit、成果物の hash、サービスの起動状態とログを確認する。転送と配置が全対象で成功したことを確認してから再起動する。
 
 ## 4. 反映内容を記録する
 
 ```text
 - デプロイ日時:
-- 対象サーバー:
-- commit:
+- 対象サーバーとビルド元:
+- commit と binary hash:
+- build 実行ユーザーと toolchain の版:
 - 実行したコマンド:
 - 起動確認:
 ```
@@ -123,14 +79,14 @@ done
 # 失敗時の復旧
 
 - `git pull` が衝突する: サーバー上を編集せず、ローカルの状態を正にして取り込み直す。
-- サービスが落ちる: `journalctl -u <unit> -n 100 --no-pager` を保存し、直前 commit へ戻す。
+- ビルドやコピーが失敗する: 再起動せず、対象ごとの commit、成果物と配置状態を確認してから再実行する。
+- サービスが落ちる: `journalctl -u <unit> -n 100 --no-pager` を保存し、直前 commit の成果物をビルド元で再ビルドして配布し、各サーバーの hash と起動状態を確認する。追跡ファイル差分は Issue に記録・保管し、確認後に Git 同期を再開する。
 
-```bash
-ssh s1 'cd / && git log -5 --oneline && git checkout "$PREV_COMMIT" -- path && systemctl restart SERVICE'
-```
 
 # 完了条件
 
+- ベンチ対象の1台でビルドし、残りの対象サーバーへ `scp` で成果物を配布できる。
+- 全対象で同一 commit と成果物の hash を確認し、サービスが起動する。
 - 競技サーバー上で設定やコードを直接編集しなくても反映できる。
 - 手順と確認方法がリポジトリまたは Issue に残っている。
 
