@@ -6,6 +6,7 @@ labels:
   - type:documentation
 depends_on:
   - initialize-servers.md
+  - prepare-deploy.md
 ---
 
 # 目的
