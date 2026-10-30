@@ -71,17 +71,21 @@ chmod 600 ~/.ssh/config
 ```sshconfig
 Host contest-1
   User isucon
+  StrictHostKeyChecking accept-new
   LocalForward 127.0.0.1:3999 127.0.0.1:3999
 
 Host contest-2
   User isucon
+  StrictHostKeyChecking accept-new
 
 Host contest-3
   User isucon
+  StrictHostKeyChecking accept-new
 
 # 練習環境でベンチサーバーが提供された場合のみ
 Host bench
   User isucon
+  StrictHostKeyChecking accept-new
 ```
 
 競技サーバーは各サーバーの初期化完了後にその `User` を `root` に変更する。ベンチサーバーは指定されたユーザーのままとする。
