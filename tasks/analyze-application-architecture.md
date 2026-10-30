@@ -31,7 +31,8 @@ depends_on:
 - [Archify](https://github.com/tt-a1i/archify) が利用可能なら architecture、workflow、sequence、dataflow、lifecycle のレポートを出す。利用できなければ Mermaid で各観点を図にする。
 - 重要な点を文章と簡単な mermaid 図として Issue に書く。
 - Archify を使った場合は SVG を Issue に添付し、リンクを確認する。
-- 改善案は仮説と分け、このタスクでは変更しない。
+- 分析結果を `knowledges/` に記録し、README に概要とリンクを追加して Pull Request を作成する。
+- 改善案は仮説と分け、このタスクではアプリケーションを変更しない。
 
 ## 実行例
 
@@ -159,6 +160,10 @@ gh issue comment "$ISSUE" --body-file /tmp/isucon-work/architecture/issue-commen
 
 利用する gh の help で添付機能・形式の対応を確認する。CLI が SVG を受理しない場合は Issue UI から添付し、ユーザー操作が必要なら `needs-user-action` を付ける。添付リンクを確認するまでは未完了にする。
 
+## 6. ナレッジとして Pull Request を作成する
+
+確認した事実、図、仮説、情報源、確認日時と commit を `knowledges/` 以下に記録する。README に概要とリンクを追加し、Issue 用 worktree で commit して Pull Request を作成する。Issue に PR のリンクを記録する。
+
 # 確認方法
 
 - Archify を使った場合、各 SVG を XML として読み込み、viewBox と vector 要素、ラスター埋込なしを確認する。
@@ -173,7 +178,8 @@ gh issue comment "$ISSUE" --body-file /tmp/isucon-work/architecture/issue-commen
 
 # 完了条件
 
-- ソースに基づく事実と、推測・改善案が Issue で区別されている。
+- ソースに基づく事実と、推測・改善案が Issue とナレッジで区別されている。
 - 重要な点が文章と mermaid で読める。
 - 5つの観点が Archify の SVG または Mermaid で確認できる。根拠がなく省略した観点には理由がある。Archify を使った場合は添付リンクを確認済み。
+- ナレッジと README のリンクを含む Pull Request が作成され、Issue から参照できる。
 - アプリケーションや設定を変更していない。
