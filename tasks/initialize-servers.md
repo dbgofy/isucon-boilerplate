@@ -92,10 +92,19 @@ git status
 
 `make` は `/etc/sudoers` と `/etc/ssh/sshd_config` を変更する。変更前に原本を whitelist して commit する。パスは実機で確認してから追加する。存在しないファイルは対象にしない。
 
+先に Git の名前とメールアドレスを確認し、未設定の項目だけ、このリポジトリ内に `make` と同じ既定値を設定する。既存の設定は変更しない。
+`gitignore.sh` は commit まで行うため、以下のブロックが失敗したら原因を解消して再実行し、成功するまで `make` へ進まない。
+
 ```bash
+set -eu
 cd /
+test -n "$(git config --get user.name || true)" || git config --local user.name anonymous
+test -n "$(git config --get user.email || true)" || git config --local user.email anonymous@example.com
+git var GIT_AUTHOR_IDENT
+git var GIT_COMMITTER_IDENT
 test -e /.gitignore || cp -n /files/gitignore /.gitignore
-ls -l /etc/sudoers /etc/ssh/sshd_config /etc/nginx /etc/mysql /etc/systemd/system
+git add -f /.gitignore
+ls -l /etc/sudoers /etc/ssh/sshd_config /etc/nginx /etc/mysql /etc/systemd/system || true
 for f in \
   /etc/sudoers \
   /etc/ssh/sshd_config \
@@ -107,7 +116,7 @@ do
 done
 ```
 
-サイト設定や drop-in がある場合は、確認したパスだけ追加する。
+`.gitignore` は whitelist の追記で ignore される前に追跡を始め、最初の原本とともに commit する。サイト設定や drop-in がある場合は、確認したパスだけ追加する。ここでも commit に失敗したら `make` へ進まない。
 
 ```bash
 find /etc/nginx /etc/mysql /etc/systemd/system -type f \( -name '*.conf' -o -name '*.cnf' -o -name '*.service' \) | sort
