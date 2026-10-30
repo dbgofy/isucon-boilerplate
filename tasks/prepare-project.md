@@ -86,7 +86,7 @@ gh api graphql -f query='{ __type(name:"ProjectV2ViewConfigurationInput") { inpu
 
 # VIEW_ID は作成・取得した実 ID
 VIEW_ID=REPLACE
-gh api graphql -f viewId="$VIEW_ID" -f filter='is:open -is:blocked -label:needs-user-action' -f query='
+gh api graphql -f viewId="$VIEW_ID" -f filter='is:open -is:blocked' -f query='
 mutation($viewId: ID!, $filter: String!) {
   updateProjectV2View(input: {viewId: $viewId, filter: $filter}) {
     projectV2View { id number name layout filter }
@@ -97,8 +97,10 @@ mutation($viewId: ID!, $filter: String!) {
 | ビュー | 保存する filter |
 | --- | --- |
 | すべて | 空文字（全 Issue / PR） |
-| 着手可能 | `is:open -is:blocked -label:needs-user-action` |
+| 着手可能 | `is:open -is:blocked` |
 | 人間の操作が必要 | `is:open label:needs-user-action` |
+
+「着手可能」は `needs-user-action` label の有無で除外しない。人間の操作待ちでも未完了・未ブロックなら表示し、「人間の操作が必要」ビューと重複してよい。
 
 `is:blocked` は GitHub Issue dependency による未完了依存先を扱う。sub-issue の親子関係で代用しない。フィルターが保存できただけで完了にせず、完了済み・依存待ち・人間の操作待ちの実項目で表示・除外を確認する。未対応なら理由を記録して未完了にする。
 
