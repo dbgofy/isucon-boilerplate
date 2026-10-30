@@ -5,8 +5,7 @@ milestone: "01 事前準備"
 labels:
   - type:task
   - type:documentation
-depends_on:
-  - prepare-repo.md
+depends_on: []
 ---
 
 # 必要な情報
@@ -33,7 +32,7 @@ depends_on:
 - Auto-add to project は対象リポジトリと `is:issue,pr is:open` 等のフィルター、enabled 状態を確認し、設定内容または画像を Issue に残す。Auto-add sub-issues だけで全 Issue/PR の自動追加済みと判定しない。
 - 着手時に対象 Project item の Status を In Progress に更新する。完了時は Issue の close と Done の両方を確認する。Auto-add は着手状態を更新しない。
 
-- 対象リポジトリに Project を作成または追加する。
+- Project を作成する。リポジトリの準備状況に応じて、対象リポジトリへリンクする。
 - Issue と Pull Request の自動追加設定を確認する。
 - Milestone 列と時期別の保存済みビューを用意し、type label と併用する。
 - Project の運用方法をチーム内で共有する。
