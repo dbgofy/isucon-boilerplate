@@ -6,7 +6,7 @@ labels:
   - type:application
 depends_on:
   - initialize-servers.md
-  - check-environment.md
+  - prepare-deploy.md
 ---
 
 # 目的
