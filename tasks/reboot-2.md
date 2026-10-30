@@ -1,7 +1,7 @@
 ---
 title: "再起動試験（2回目）"
+milestone: "06 競技終盤"
 labels:
-  - phase:final-check
   - type:validation
   - type:deployment
 depends_on:

@@ -1,7 +1,7 @@
 ---
 title: "OS の制限と不要なフィルタを確認する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:infrastructure
   - type:security
 depends_on:

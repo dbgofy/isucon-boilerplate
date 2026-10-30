@@ -1,7 +1,7 @@
 ---
 title: "ログローテーションを用意する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:observability
   - type:task
 depends_on:
@@ -23,6 +23,8 @@ depends_on:
 `LOG_FILES` へ明示して渡す。未確認のサーバー固有パスは既定値に追加しない。
 
 # 作業
+
+- nginx と MySQL の `error.log` 等、同名ファイルを同じ保存先へ上書きしない。サーバー・サービス別ディレクトリ、または `nginx-error.log` / `mysql-error.log` のように保存名を分ける。
 
 - アクセスログ、スロークエリログ、アプリケーションログのパスを確認する。
 - ベンチマーク前後で切る対象と、退避先を決める。
@@ -48,7 +50,7 @@ done
 
 ## 2. ローカルに毎回同じコマンドを書く
 
-退避先は `/var/log/archive/` など、Git 管理外にする。事前に `mkdir -p /var/log/archive` で作成する。`make rotate-logs` は既定で
+退避先は `/var/log/archive/` など、Git 管理外にする。`make rotate-logs` は既定で
 Issue に確認済みの nginx access/error log を対象にし、存在しないファイルは無視する。
 追加のログは、実機で確認した後に `LOG_FILES` で明示する。
 
@@ -56,13 +58,8 @@ Issue に確認済みの nginx access/error log を対象にし、存在しな�
 LOG_ARCHIVE_ROOT ?= /var/log/archive
 LOG_FILES ?= /var/log/nginx/access.log /var/log/nginx/error.log
 
-.PHONY: rotate-logs
 rotate-logs:
-	@set -eu; dest=$$(mktemp -d "$(LOG_ARCHIVE_ROOT)/$$(date +%Y%m%d-%H%M%S)-XXXXXX"); \
-	for file in $(LOG_FILES); do \
-	  if [ -f "$$file" ]; then mkdir -p "$$dest$$(dirname "$$file")"; mv -- "$$file" "$$dest$$file"; fi; \
-	done; \
-	nginx -s reopen
+	# Makefile の rotate-logs を使用する。
 ```
 
 実機で確認済みの追加ログを切り出す場合:
@@ -115,3 +112,4 @@ ssh s1 'ls -lt /var/log/archive | head; sudo tail -n 1 /var/log/nginx/access.log
 
 - 計測ごとにログを分けて保存できる。
 - 手順がリポジトリまたは Issue に残っている。
+

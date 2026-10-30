@@ -1,12 +1,21 @@
 ---
 title: "DB の初期データなど Git 管理対象外のデータをバックアップする"
+needs-user-action: true
+milestone: "03 競技開始直後"
 labels:
-  - phase:start
   - type:backup
   - type:task
 depends_on:
-  - initialize-servers.md
+  - prepare-local-access.md
 ---
+
+# ユーザー確認
+
+1. 実行する（必要情報を提供する）
+2. 今回は実行しない（未完了のまま保留する）
+3. 手順だけ作成する（実機・外部サービスには触れない）
+
+必要な情報: 取得対象と除外、接続方法・権限、実行範囲・空き時間、サイズと影響、Release の公開範囲。既に提供・許可された内容は再質問しない。秘密情報の値は書かない。
 
 # 目的
 
@@ -15,11 +24,13 @@ DB の初期データなど Git に入れないデータを、復旧と比較の
 
 # 前提条件
 
-- `initialize-servers.md` が完了している。
+- データの取得対象・接続方法・許可が確認できている。Git 初期化完了は必須にしない。提供状態を変更する前に取得する。
 - ベンチマーク実行中ではない空き時間に行う。
 - アーカイブが大きい、または影響が不明なら、実行前にユーザーへ確認する。
 
 # 対象サーバー
+
+初期化前は isucon 接続から sudo で必要な読み取り権限を得る。バックアップのために root SSH や Git 初期化の完了を待たない。
 
 Issue に記録した全競技サーバー。
 
@@ -30,7 +41,7 @@ Issue に記録した全競技サーバー。
 - 必要に応じて帯域と I/O を制限する。
 - タイムスタンプ付きアーカイブを作成する。
 - サイズが大きい、または影響が不明な場合は実行前にユーザーへ確認する。
-- 初期状態用の GitHub Release を作成し、asset を登録する。
+- 取得直後は一時領域に保持し、初回ベンチの成功・失敗を問わず、その `bench-<id>` Release に添付する。
 - Release asset に秘密情報が含まれる場合は、公開範囲とアクセス権を確認する。
 
 ## 実行例
@@ -68,7 +79,7 @@ I/O を抑える。アプリケーションコードと設定ファイルは含�
 MySQL が動いている場合はデータ込みで dump する。接続情報はサーバー上の既存設定を使う。
 
 ```bash
-ssh s1 'bash -s' <<'EOF'
+ssh s1 'sudo bash -s' <<'EOF'
 set -euo pipefail
 STAMP=$(date +%Y%m%d-%H%M%S)
 HOST=$(hostname -s)
@@ -83,8 +94,8 @@ EOF
 提供済みの初期 SQL やシードファイルが Git 管理対象外なら、確認したパスだけ別に取得する。
 
 ```bash
-ssh s1 'bash -s' <<'EOF'
-set -eu
+ssh s1 'sudo bash -s' <<'EOF'
+set -euo pipefail
 # 実機で確認したパスだけ。例:
 # ls -lh /home/isucon/webapp/sql/*.sql
 true
@@ -103,36 +114,21 @@ ls -lh /tmp/isucon-work/backup
 grep -n '' .gitignore || true
 ```
 
-## 4. GitHub Release に asset として載せる
+## 4. 初回ベンチの Release へ引き継ぐ
 
-Release asset は暗号化保管ではない。秘密情報を含む場合は公開範囲を確認する。
+初回ベンチ前はアーカイブの正確なパス、サイズ、SHA-256、取得日時、対象を Issue に記録して保持する。`run-baseline-benchmark.md` が初回の成功・失敗を問わず `bench-<id>` Release に添付する。別の初期バックアップ専用 Release を新規作成しない。
 
-```bash
-TAG="db-initial-${STAMP}"
-gh release create "$TAG" /tmp/isucon-work/backup/* \
-  --repo OWNER/REPOSITORY \
-  --title "DB初期データバックアップ ${STAMP}" \
-  --notes "$(cat <<EOF
-DB の初期データなど Git 管理対象外データのバックアップ。Git 履歴には含めていない。
-
-- 取得日時: ${STAMP}
-- 対象サーバー: Issue に記録したサーバー
-- 除外: アプリケーションコード、設定ファイル、秘密鍵、ログ、キャッシュ
-EOF
-)"
-```
+添付後はダウンロードした asset のサイズ・digest と照合する。再起動前に必要な一時ファイルをローカル等へ退避する。既存 Release や asset を上書きしない。
 
 # 確認方法
 
 ```bash
 ls -lh /tmp/isucon-work/backup
 gzip -t /tmp/isucon-work/backup/s1-db-*.sql.gz
-zcat /tmp/isucon-work/backup/s1-db-*.sql.gz | head
-gh release view "$TAG" --repo OWNER/REPOSITORY
-git status --short /tmp/isucon-work/backup
+shasum -a 256 /tmp/isucon-work/backup/*.sql.gz
 ```
 
-`git status` でバックアップが staged / tracked になっていないこと。
+バックアップをリポジトリ外で保持し、Git の追跡対象に含まれていないことを確認する。
 
 復旧は dump を流し込む。例: `zcat /tmp/isucon-work/backup/s1-db-*.sql.gz | mysql`。認証は実機の既存設定を使う。
 
@@ -140,11 +136,12 @@ git status --short /tmp/isucon-work/backup
 
 - ディスク不足: `/tmp` の途中ファイルを消し、対象を絞って再実行する。
 - 取得がアプリに影響する: `ionice` / `rsync --bwlimit` を強めるか、中断して空き時間に再開する。
-- Release 作成失敗: 手元の `/tmp/isucon-work/backup` は残す。公開範囲を確認してから再作成する。
+- 引き継ぎ・添付失敗: 一時領域の原本を保持し、初回ベンチ Issue に不足を記録する。
 
 # 完了条件
 
-- 取得日時、対象、サイズ、保存先、取得結果が Issue・PR・Release に記録されている。
+- 取得日時、対象、サイズ、SHA-256、保存先、取得結果と復旧方法が Issue に記録され、初回ベンチ Issue へ引き継がれている。Release 添付の完了確認は初回ベンチで行い、循環依存にしない。
 - バックアップが Git の履歴に追加されていない。
 - アプリケーションコードや設定ファイルがバックアップ対象に含まれていない。
 - 復旧方法を確認できる。
+

@@ -1,8 +1,8 @@
 ---
 title: "運営提供のインフラを適用する"
 needs-user-action: true
+milestone: "03 競技開始直後"
 labels:
-  - phase:start
   - type:infrastructure
   - type:deployment
 depends_on:
@@ -25,6 +25,8 @@ depends_on:
 運営手順が作成または指定する競技サーバー。未提供なら対象なし。
 
 # 作業
+
+- ユーザーが既に作成完了と報告した環境は、その情報を記録して再利用する。重複作成しない。再作成時は instance 識別、スペック、ソフトウェアの条件差を記録する。
 
 - ポータル、マニュアル、配布物にインフラ手順やテンプレート（例: CloudFormation）があるか確認する。
 - 提供されていない場合は、その旨を記録して完了する。

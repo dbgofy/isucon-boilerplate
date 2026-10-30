@@ -1,7 +1,7 @@
 ---
 title: "アクセスログの集計を設定する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:observability
   - type:task
 depends_on:
@@ -24,6 +24,8 @@ depends_on:
 プロキシまたはアプリのアクセスログがあるサーバー。
 
 # 作業
+
+- 追加ログは runtime marker 等で切り替え、再起動後に自動有効化しない。nginx reload 直後は旧 worker が処理し得るため、実際の状態と新ログへの出力を読み直して反映確認する。
 
 - プロキシまたはアプリケーションのアクセスログ形式を確認する。
 - 集計ツールを入れ、ルート定義と初回ログからパスの正規化ルールを決める。

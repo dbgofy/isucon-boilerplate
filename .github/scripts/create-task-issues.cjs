@@ -1,6 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const milestoneTitles = [
+  '01 事前準備', '02 競技直前', '03 競技開始直後', '04 競技序盤',
+  '05 競技中盤', '06 競技終盤', '07 競技終了後',
+];
+
 // The task format intentionally supports only strings, booleans and string lists.
 function parseTask(filename, text) {
   const match = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
@@ -16,7 +21,7 @@ function parseTask(filename, text) {
     if (!line.trim()) continue;
     const item = line.match(/^  - (.+)$/);
     if (item && list) { meta[list].push(scalar(item[1])); continue; }
-    const field = line.match(/^(title|labels|depends_on|needs-user-action):\s*(.*)$/);
+    const field = line.match(/^(title|milestone|labels|depends_on|needs-user-action):\s*(.*)$/);
     if (!field || Object.hasOwn(meta, field[1])) throw new Error(`${filename}: 不正なメタデータ: ${line}`);
     const [, key, value] = field;
     list = undefined;
@@ -32,10 +37,11 @@ function parseTask(filename, text) {
   if (!meta.title || !Array.isArray(meta.labels) || !meta.labels.length || !Array.isArray(meta.depends_on) || !match[2].trim()) {
     throw new Error(`${filename}: title / labels / depends_on / 本文が必要`);
   }
+  if (!milestoneTitles.includes(meta.milestone)) throw new Error(`${filename}: 不正な milestone`);
   for (const label of meta.labels) {
-    if (!/^(phase|type):[a-z0-9-]+$/.test(label)) throw new Error(`${filename}: 不正な label ${label}`);
+    if (!/^type:[a-z0-9-]+$/.test(label)) throw new Error(`${filename}: 不正な label ${label}`);
   }
-  return { filename, title: meta.title, labels: [...new Set([...meta.labels, ...(meta['needs-user-action'] ? ['needs-user-action'] : [])])], dependencies: meta.depends_on, body: match[2].trim(), needsUserAction: meta['needs-user-action'] === true };
+  return { filename, title: meta.title, milestone: meta.milestone, labels: [...new Set([...meta.labels, ...(meta['needs-user-action'] ? ['needs-user-action'] : [])])], dependencies: meta.depends_on, body: match[2].trim(), needsUserAction: meta['needs-user-action'] === true };
 }
 
 function loadTasks(directory) {
@@ -74,7 +80,14 @@ async function createTaskIssues({ github, context, directory = 'tasks' }) {
   const existing = new Map(tasks.map(t => [t.filename, unique(issues, i => (i.body || '').includes(marker(t.filename)), t.filename)]));
   const labels = new Set((await github.paginate(github.rest.issues.listLabelsForRepo, { ...repo, per_page: 100 })).map(l => l.name));
   for (const name of new Set(['type:task', ...tasks.flatMap(t => t.labels)])) {
-    if (!labels.has(name)) await github.rest.issues.createLabel({ ...repo, name, color: name === 'needs-user-action' ? 'FBCA04' : name.startsWith('phase:') ? '1D76DB' : 'C5DEF5' });
+    if (!labels.has(name)) await github.rest.issues.createLabel({ ...repo, name, color: name === 'needs-user-action' ? 'FBCA04' : 'C5DEF5' });
+  }
+  const milestones = await github.paginate(github.rest.issues.listMilestones, { ...repo, state: 'all', per_page: 100 });
+  const milestoneNumbers = new Map();
+  for (const title of milestoneTitles) {
+    let milestone = unique(milestones, m => m.title === title, title);
+    if (!milestone) milestone = (await github.rest.issues.createMilestone({ ...repo, title })).data;
+    milestoneNumbers.set(title, milestone.number);
   }
   if (!parent) parent = (await github.rest.issues.create({ ...repo, title: parentTitle, labels: ['type:task'], body: `共通タスクの進行状況を管理する親 Issue です。\n\n${parentMarker}` })).data;
   const children = await github.paginate('GET /repos/{owner}/{repo}/issues/{issue_number}/sub_issues', { ...repo, issue_number: parent.number, per_page: 100 });
@@ -82,7 +95,12 @@ async function createTaskIssues({ github, context, directory = 'tasks' }) {
   for (const task of tasks) {
     let issue = existing.get(task.filename);
     if (!issue) {
-      issue = (await github.rest.issues.create({ ...repo, title: task.title, labels: task.labels, body: `${task.body}\n\n${marker(task.filename)}` })).data;
+      // Templates can provide their own task-specific questions. Do not ask every
+      // task for server names or an execution window (e.g. reading regulations).
+      const question = task.needsUserAction && !/^#{1,2} ユーザー確認$/m.test(task.body)
+        ? `## ユーザー確認\n\n1. 実行する（必要情報を提供する）\n2. 今回は実行しない（未完了のまま保留する）\n3. 手順だけ作成する（実機・外部サービスには触れない）\n\n必要な情報は、本文の前提条件・対象・作業に記載したこのタスク固有の項目だけを確認する。既に許可された対象・範囲は再質問しない。秘密情報そのものは記載しない。\n\n`
+        : '';
+      issue = (await github.rest.issues.create({ ...repo, title: task.title, milestone: milestoneNumbers.get(task.milestone), labels: task.labels, body: `${question}${task.body}\n\n${marker(task.filename)}` })).data;
       existing.set(task.filename, issue);
     }
     // Separate creation and linking so a failed linking operation is recoverable.

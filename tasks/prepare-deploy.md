@@ -1,7 +1,7 @@
 ---
 title: "デプロイ手順を用意する"
+milestone: "04 競技序盤"
 labels:
-  - phase:early-competition
   - type:deployment
   - type:task
 depends_on:
@@ -23,6 +23,9 @@ depends_on:
 Issue に記録した全競技サーバー。
 
 # 作業
+
+- 初期セットアップ後の SSH と build は root に統一し、利用する toolchain の実体を指定する。サービスの実行 User は維持する。root 所有 Git の所有者問題を safe.directory の全許可や buildvcs 無効化で回避しない。
+- exact commit、binary hash、build 実行ユーザー、toolchain の版を記録する。rollback の追跡ファイル差分は Issue に記録して保管し、確認してから git 同期を再開する。
 
 - `git pull`、ビルド、再起動、ログ確認の手順を決める。
 - サーバーごとの差分は `hostname` で扱う。
@@ -58,7 +61,7 @@ done
 deploy:
 	git pull origin master
 	# ビルドと再起動は、マニュアルまたは実機で確認したコマンドに置き換える
-	# 例: sudo -u isucon bash -lc 'cd /home/isucon/webapp && make'
+	# 例: cd /home/isucon/webapp && make
 	# 例: systemctl restart nginx
 ```
 
@@ -92,7 +95,7 @@ cd /
 git pull origin master
 git log -1 --oneline
 # 以下は実機で確認したサービス名に置き換える
-# sudo -u isucon bash -lc 'cd /home/isucon/webapp && make'
+# cd /home/isucon/webapp && make
 # systemctl restart nginx
 systemctl is-active nginx || true
 ss -lntp

@@ -1,7 +1,7 @@
 ---
 title: "提出用の最終ベンチマークを実行する"
+milestone: "06 競技終盤"
 labels:
-  - phase:final-check
   - type:performance
   - type:validation
 depends_on:
@@ -13,6 +13,8 @@ depends_on:
 凍結した最終状態のスコアと動作結果を確定する。
 
 # 前提条件
+
+- BENCH_ID は実 Job ID と環境識別から一意にする。再作成で Job ID がリセットされても既存 Release を上書きしない。
 
 - 計測機能は無効化済み。
 - ベンチマークの実行方法はマニュアル / ポータルを正とする。
@@ -108,7 +110,7 @@ EOF
 
 ```bash
 TARGET_COMMIT=$(grep '^commit=' "$DIR/meta.txt" | cut -d= -f2)
-TAG="final-${STAMP}-score-${SCORE}"
+TAG="bench-${BENCH_ID}"
 gh release create "$TAG" \
   --repo "$REPO" \
   --target "$TARGET_COMMIT" \

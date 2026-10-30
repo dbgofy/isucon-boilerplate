@@ -1,7 +1,7 @@
 ---
 title: "変更を凍結する"
+milestone: "06 競技終盤"
 labels:
-  - phase:final-check
   - type:deployment
 depends_on:
   - disable-instrumentation.md

@@ -1,18 +1,29 @@
 ---
 title: "GitHub Project を準備する"
+needs-user-action: true
+milestone: "01 事前準備"
 labels:
-  - phase:day-before
   - type:task
   - type:documentation
 depends_on:
   - prepare-repo.md
 ---
 
+# ユーザー確認
+
+1. 実行する（必要情報を提供する）
+2. 今回は実行しない（未完了のまま保留する）
+3. 手順だけ作成する（実機・外部サービスには触れない）
+
+必要な情報: 対象リポジトリ・Project、作成・編集の権限、自動追加設定をユーザーが UI で行うか。既に提供・許可された内容は再質問しない。秘密情報の値は書かない。
+
 # 目的
 
 競技中の Issue と Pull Request を整理できる GitHub Project を準備する。
 
 # 前提条件
+
+- 一覧には `read:project`、編集には `project` 相当の権限が必要。`gh auth status` と実操作で確認し、不足時だけユーザーに認証更新を依頼する。token の値は共有しない。
 
 - `gh` でこのリポジトリの Project を作成できる。
 
@@ -22,9 +33,13 @@ depends_on:
 
 # 作業
 
+- CLI/API で作成・リンク・既存 Issue/PR の登録を行い、UI が必要な設定を分ける。ユーザー操作待ちは `needs-user-action` を付け、完了報告・設定内容を確認するまで未完了にする。
+- Auto-add to project は対象リポジトリと `is:issue,pr is:open` 等のフィルター、enabled 状態を確認し、設定内容または画像を Issue に残す。Auto-add sub-issues だけで全 Issue/PR の自動追加済みと判定しない。
+- 着手時に対象 Project item の Status を In Progress に更新する。完了時は Issue の close と Done の両方を確認する。Auto-add は着手状態を更新しない。
+
 - 対象リポジトリに Project を作成または追加する。
 - Issue と Pull Request の自動追加設定を確認する。
-- phase/type label で絞り込めることを確認する。
+- Milestone 列と時期別の保存済みビューを用意し、type label と併用する。
 - Project の運用方法をチーム内で共有する。
 
 ## 実行例
@@ -60,10 +75,10 @@ GitHub の Project 設定で、このリポジトリの Issue / Pull Request を
 gh project view "$PROJECT_NUMBER" --owner "$OWNER"
 ```
 
-## 4. label で絞り込めることを確認する
+## 4. Milestone と type label で絞り込めることを確認する
 
 ```bash
-gh issue list --repo "$REPO" --label 'phase:day-before' --limit 5
+gh issue list --repo "$REPO" --milestone '01 事前準備' --limit 5
 gh issue list --repo "$REPO" --label 'type:infrastructure' --limit 5
 ```
 
@@ -87,6 +102,8 @@ gh project view "$PROJECT_NUMBER" --owner "$OWNER" --web
 ```
 
 # 完了条件
+
+- Milestone 列・時期別ビュー、自動追加の対象と有効状態を確認し、ユーザー操作待ちが残っていない。
 
 - チームメンバーが Project を利用できる。
 - 新しく作成した Issue と Pull Request を Project で管理できる。

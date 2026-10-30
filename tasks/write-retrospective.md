@@ -1,7 +1,7 @@
 ---
 title: "振り返りを公開する"
+milestone: "07 競技終了後"
 labels:
-  - phase:after-competition
   - type:documentation
   - type:task
 depends_on:
