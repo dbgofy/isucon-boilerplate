@@ -23,9 +23,13 @@ depends_on:
 
 # 対象サーバー
 
-Issue に記録した全競技サーバー。各サーバーで同じ手順を繰り返す。
+最初に Issue に記録した1台を対象にする。1台目の完了後、残りのサーバーの Issue の分け方をユーザーが選択する。
 
 # 作業
+
+- 1台目のセットアップと検証が完了したら結果を記録し、2台目・3台目を (1) 同じ Issue で続けるか、(2) 別 Issue に切り出し、着手可能な他の Issue を先に進めつつ並行してセットアップするか、ユーザーに選択してもらう。回答まで残りのセットアップと切り出しは行わない。対象台数と接続先はユーザー提供情報を使う。
+- 同じ Issue で続ける場合は対象を追記し、各サーバーを1台ずつ完了・検証してから次に進む。この Issue は対象全台の完了まで閉じない。
+- 別 Issue に切り出す場合は対象と依存関係を記録し、追加サーバーのセットアップは1台ずつ進める。1台目の Issue は選択と切り出しを記録して完了できる。他の Issue は必要な対象サーバーの準備状況と依存関係を確認してから着手し、未準備のサーバーを必要とする作業は待機する。
 
 - reset 前に各サーバー自身の設定原本を安全な一時領域へ退避し、owner/mode を保存する。取り込み後は原本内容と所有者・権限を復元し、Git 登録と初回 permissions save より先に検証する。sudoers の 0440 等を他サーバーの値で上書きしない。
 - `sshd -t` / `visudo -c` 後、実在する `ssh.service` / `sshd.service` を選んで reload できることを確認する。必要な Makefile 修正はローカルで commit し `git pull` する。
@@ -48,15 +52,13 @@ Issue に記録した全競技サーバー。各サーバーで同じ手順を�
 REPO_SSH=git@github.com:OWNER/REPOSITORY.git
 BRANCH=master
 # SSH Host 名は prepare-local-access で設定したもの
-SERVERS=(s1 s2 s3)
+SERVER=s1
 ```
 
 ## 1. 未初期化であることを確認する
 
 ```bash
-for s in "${SERVERS[@]}"; do
-  ssh "$s" 'hostname; whoami; test ! -d /.git && echo "UNINITIALIZED" || echo "ALREADY_INITIALIZED"'
-done
+ssh "$SERVER" 'hostname; whoami; test ! -d /.git && echo "UNINITIALIZED" || echo "ALREADY_INITIALIZED"'
 ```
 
 `ALREADY_INITIALIZED` のサーバーでは `git reset --hard` を使わない。`git status` を確認してから続行可否を Issue に書く。
@@ -66,7 +68,7 @@ done
 初回セットアップ時だけ `isucon` で接続する。
 
 ```bash
-ssh s1
+ssh "$SERVER"
 sudo -i
 ```
 
@@ -178,7 +180,7 @@ GitHub Actions の Update SSH Keys が collaborator の公開鍵を `root/.ssh/a
 gh workflow run update-sshkeys.yml --repo OWNER/REPOSITORY
 gh run watch --repo OWNER/REPOSITORY
 
-# 各サーバー（isucon のまま）
+# 対象サーバー（isucon のまま）
 cd /
 git pull origin master
 ```
@@ -188,18 +190,14 @@ workflow を待たない場合は、手元の公開鍵を root に追加する�
 ```bash
 # ローカル。公開鍵パスはユーザー提供の鍵に合わせる。
 pubkey="$HOME/.ssh/id_ed25519.pub"
-for s in "${SERVERS[@]}"; do
-  ssh "$s" "sudo tee -a /root/.ssh/authorized_keys" < "$pubkey"
-  ssh "$s" 'sudo chmod 600 /root/.ssh/authorized_keys'
-done
+ssh "$SERVER" "sudo tee -a /root/.ssh/authorized_keys" < "$pubkey"
+ssh "$SERVER" 'sudo chmod 600 /root/.ssh/authorized_keys'
 ```
 
 ## 10. root での SSH を確認する
 
 ```bash
-for s in "${SERVERS[@]}"; do
-  ssh -o User=root "$s" 'whoami; hostname; git -C / rev-parse --abbrev-ref HEAD; git -C / status -sb'
-done
+ssh -o User=root "$SERVER" 'whoami; hostname; git -C / rev-parse --abbrev-ref HEAD; git -C / status -sb'
 ```
 
 確認できたら、ローカル SSH 設定の `User` を `root` に変更する。以後の同期はローカルで変更し、サーバーでは `git pull` する。
@@ -209,15 +207,13 @@ DB の初期データなど Git に入れないデータのバックアップは
 # 確認方法
 
 ```bash
-for s in "${SERVERS[@]}"; do
-  ssh -o User=root "$s" 'set -e
+ssh -o User=root "$SERVER" 'set -e
     test -d /.git
     git -C / remote -v
     git -C / log -1 --oneline
     git ls-files | wc -l
     echo PermitRootLogin: $(sudo sshd -T | awk "/^permitrootlogin /{print \$2}")
-  '
-done
+'
 ```
 
 # 失敗時の復旧
@@ -229,8 +225,10 @@ done
 
 # 完了条件
 
-- 各サーバーで変更前の状態を確認できる。
+- 対象サーバーで変更前の状態を確認できる。
 - Git 管理対象に秘密鍵、DB データ、バイナリ、実行時生成データが含まれていない。
 - 以後の同期をローカル変更と `git pull` で行える。
-- 各サーバーへ root で SSH できる。
+- 対象サーバーへ root で SSH できる。
+- 1台目の完了後に、同じ Issue で続けるか別 Issue に切り出して他の作業と並行するかを確認し、選択と対象を記録している。
+- 同じ Issue で続ける場合は対象全台の検証が完了し、切り出す場合は後続 Issue と必要な依存関係が記録されている。
 
