@@ -1,6 +1,5 @@
 ---
 title: "レギュレーションを確認する"
-needs-user-action: true
 milestone: "01 事前準備"
 labels:
   - type:task
