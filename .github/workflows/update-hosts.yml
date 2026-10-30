@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: generate config for prometheus
         run: |
           jq -sR '
@@ -44,7 +46,7 @@ jobs:
           git commit -m 'Update config for prometheus'
       - name: git push
         run: |
-          git pull origin master
+          git pull --rebase origin master
           git push origin master
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
